@@ -1,0 +1,1645 @@
+<!doctype html>
+<html lang="th" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>AutoSteer Field Designer</title>
+<style>
+:root{
+  --bg:#eef1ec; --panel:#ffffff; --panel2:#f5f8f4; --ink:#1b2620; --muted:#5f6b62;
+  --line:#d4dccf; --accent:#2f7d4f; --accent2:#e08a00; --accent-ink:#ffffff;
+  --input-bg:#ffffff; --input-focus:#eef6ef; --danger:#c0392b; --ok:#2f7d4f;
+  --shadow:0 1px 2px rgba(20,30,20,.06),0 8px 24px rgba(20,30,20,.06);
+  /* data-layer colours: constant across themes */
+  --c-bound:#ff8f00; --c-ab:#1e6fe0; --c-orig:#c9d3cd; --c-a:#2f9e5f; --c-b:#e04545;
+  --c-vert:#78909c; --c-pick:#ffc93c; --c-imp:#a855f7; --c-row:#57bfae;
+}
+html[data-theme="dark"]{
+  --bg:#0f1512; --panel:#161d18; --panel2:#1b241d; --ink:#e8ede8; --muted:#9fb0a4;
+  --line:#263029; --accent:#57b47e; --accent2:#f0a92e; --accent-ink:#08120b;
+  --input-bg:#0f1512; --input-focus:#17231a; --danger:#e57373; --ok:#57b47e;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 28px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Thai",sans-serif;
+  font-size:14px;line-height:1.45;-webkit-text-size-adjust:100%;overflow:hidden}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;font-variant-numeric:tabular-nums}
+
+.top{display:flex;align-items:center;gap:12px;height:54px;padding:0 14px;
+  background:var(--panel);border-bottom:1px solid var(--line);z-index:1200;position:relative}
+.brand{display:flex;flex-direction:column;line-height:1.05;min-width:0}
+.brand .t1{font-weight:750;letter-spacing:.02em;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .t2{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.spacer{flex:1}
+.badge{font:600 11px/1 ui-monospace,monospace;color:var(--accent);border:1px solid var(--accent);
+  padding:4px 7px;border-radius:6px;background:transparent;letter-spacing:.03em}
+.tbtn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);
+  height:36px;min-width:44px;padding:0 10px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px}
+.tbtn:hover{border-color:var(--accent)}
+
+main{display:flex;height:calc(100% - 54px);min-height:0}
+.side{width:344px;flex:0 0 344px;background:var(--bg);border-right:1px solid var(--line);
+  overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch}
+#mapwrap{flex:1;position:relative;min-width:0}
+#map{position:absolute;inset:0;background:#c9d3c6}
+html[data-theme="dark"] #map{background:#0b120d}
+
+.basepick{position:absolute;top:10px;right:10px;z-index:1000;display:flex;gap:4px;
+  background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:4px;box-shadow:var(--shadow)}
+.basepick button{border:0;background:transparent;color:var(--ink);font:650 13.5px/1 inherit;
+  min-height:40px;min-width:82px;padding:0 14px;border-radius:8px;cursor:pointer;font-family:inherit}
+.basepick button.active{background:var(--accent);color:var(--accent-ink)}
+.basepick button:not(.active):hover{background:var(--panel2)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:13px 13px 14px;margin-bottom:11px;box-shadow:var(--shadow)}
+.card h2{margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);font-weight:700;display:flex;align-items:center;gap:8px}
+.card h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.hint{font-size:12px;color:var(--muted);margin:7px 0 0}
+
+.btn{appearance:none;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);
+  min-height:44px;padding:9px 12px;border-radius:9px;font-weight:650;font-size:13.5px;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:filter .12s,background .12s;font-family:inherit}
+.btn:hover{filter:brightness(1.05)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:var(--panel2);color:var(--ink);border-color:var(--line);font-weight:600}
+.btn.ghost:hover{border-color:var(--accent)}
+.btn.ghost.active{border-color:var(--accent);background:var(--input-focus);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.btn.ghost.pickon{border-color:var(--c-bound);color:var(--c-bound);box-shadow:inset 0 0 0 1px var(--c-bound);background:var(--panel2)}
+.btn.ghost.lineon{border-color:var(--c-imp);color:var(--c-imp);box-shadow:inset 0 0 0 1px var(--c-imp);background:var(--panel2)}
+.btn.danger{background:transparent;color:var(--danger);border-color:var(--line)}
+.btn.danger:hover{border-color:var(--danger)}
+.btn.block{display:flex;width:100%}
+.btn.sm{min-height:38px;padding:6px 10px;font-size:12.5px}
+.row{display:flex;gap:8px}
+.row>*{flex:1}
+label.fld{display:block;font-size:11.5px;color:var(--muted);font-weight:600;margin:0 0 4px}
+.in{width:100%;background:var(--input-bg);color:var(--ink);border:1px solid var(--line);
+  border-radius:8px;padding:10px;font-size:14px;outline:none;font-family:inherit;min-height:44px}
+.in:focus{border-color:var(--accent);background:var(--input-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+.in::placeholder{color:var(--muted);opacity:.7}
+
+.drop{border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;
+  background:var(--panel2);cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--input-focus)}
+.drop .big{font-weight:650;font-size:13.5px}
+.drop .sm{font-size:11.5px;color:var(--muted);margin-top:3px}
+
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:3px 0;font-size:13px}
+.kv .k{color:var(--muted);white-space:nowrap}
+.kv .v{font-weight:600;text-align:right;overflow:hidden;text-overflow:ellipsis}
+
+.legend{display:flex;flex-wrap:wrap;gap:9px 14px;margin-top:9px;font-size:11.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.15)}
+.legend i.line{height:3px;border-radius:2px}
+.legend i.dash{height:0;border:0;border-top:2px dashed var(--c-orig);width:14px;border-radius:0}
+
+.instr{display:flex;gap:10px;margin-top:9px}
+.instr .cell{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.instr .lab{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.instr .num{font-size:22px;font-weight:700;margin-top:2px}
+.instr .num small{font-size:12px;color:var(--muted);font-weight:600;margin-left:2px}
+
+.nudge{display:flex;gap:8px;align-items:stretch;margin-top:4px}
+.nudge .btn{flex:0 0 74px;font-size:14px}
+.nudge .val{flex:1;display:flex;flex-direction:column;gap:2px}
+.nudge .val .in{text-align:center;font-weight:700;font-size:15px}
+.sideNow{text-align:center;font-size:12px;color:var(--muted);margin-top:7px;font-weight:600}
+
+.exline{font-size:12px;color:var(--muted);margin-top:9px;display:flex;gap:7px;flex-wrap:wrap}
+.exline code{border-radius:5px;padding:2px 7px;font-size:11.5px;border:1px solid var(--line);background:var(--panel2)}
+.exline code.on{color:var(--accent);border-color:var(--accent);font-weight:700;
+  background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.exline code.off{opacity:.42;border-style:dashed}
+
+.foot{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;color:var(--muted);padding:2px 2px 14px}
+.linkbtn{background:none;border:none;color:var(--accent);cursor:pointer;font:inherit;font-weight:600;padding:0}
+.linkbtn:hover{text-decoration:underline}
+.hidden{display:none!important}
+
+.abtip{border:0;box-shadow:0 1px 4px rgba(0,0,0,.35);font-weight:800;font-size:12px;padding:2px 8px;border-radius:6px}
+.abtip.a{background:var(--c-a);color:#fff}
+.abtip.b{background:var(--c-b);color:#fff}
+.abtip::before{display:none}
+.chk{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:600;font-size:13.5px}
+.chk input{width:22px;height:22px;accent-color:var(--accent);cursor:pointer;flex:0 0 auto}
+textarea.in{min-height:112px;resize:vertical;line-height:1.45}
+.modal{position:fixed;inset:0;z-index:4000;background:rgba(12,18,15,.55);
+  display:flex;align-items:center;justify-content:center;padding:18px}
+.modalBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;
+  max-width:470px;width:100%;box-shadow:var(--shadow);max-height:88vh;overflow:auto}
+.modalBox h3{margin:0 0 12px;font-size:15px}
+.credit{font-size:12.5px;line-height:1.5}
+.credit .nm{font-weight:700;font-size:13.5px}
+.credit .dp{color:var(--muted);margin-top:1px}
+.candtip{border:0;box-shadow:0 1px 4px rgba(0,0,0,.35);font-weight:800;font-size:11px;
+  padding:1px 6px;border-radius:5px;background:#78909c;color:#fff}
+.candtip.on{background:var(--c-bound);color:#3a2400}
+.candtip.on.ln{background:var(--c-imp);color:#fff}
+.candtip::before{display:none}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
+  background:#1c2620;color:#fff;padding:11px 16px;border-radius:10px;font-size:13px;font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:3000;max-width:88vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+#frameBanner{display:none;position:absolute;top:0;left:0;right:0;z-index:1500;
+  background:var(--accent2);color:#1a1200;font-size:12px;font-weight:600;padding:7px 12px;text-align:center}
+
+#bootErr{display:none;position:fixed;inset:0;z-index:5000;background:rgba(15,21,18,.92);
+  color:#fff;align-items:center;justify-content:center;padding:24px;text-align:center}
+#bootErr .box{max-width:440px}
+#bootErr h3{margin:0 0 8px;font-size:16px}
+#bootErr p{margin:4px 0;font-size:13.5px;opacity:.92}
+
+@media (max-width:860px){
+  main{flex-direction:column}
+  .side{width:100%;flex:1 1 auto;border-right:0;border-top:1px solid var(--line);order:2}
+  #mapwrap{order:1;flex:0 0 48vh;height:48vh}
+  .basepick button{min-width:74px}
+}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <span class="t1" id="titleMain" data-i18n="app_title">ออกแบบแปลง AutoSteer</span>
+    <span class="t2" data-i18n="app_sub">Boundary + AB Line</span>
+  </div>
+  <div class="spacer"></div>
+  <span class="badge" id="verBadge">v1.8</span>
+  <button class="tbtn" id="langBtn" title="Language">EN</button>
+  <button class="tbtn" id="themeBtn" title="Theme">☾</button>
+</div>
+
+<main>
+  <aside class="side">
+    <!-- IMPORT -->
+    <section class="card">
+      <h2 data-i18n="import_h">นำเข้าไฟล์</h2>
+      <input type="file" id="file" hidden>
+      <div class="drop" id="drop">
+        <div class="big" data-i18n="import_drop">แตะเพื่อเลือกไฟล์ หรือวางไฟล์ที่นี่</div>
+        <div class="sm" data-i18n="import_hint">KML · KMZ · Shapefile (.shp / .zip) · SW Maps</div>
+      </div>
+    </section>
+
+    <!-- IMPORT CHOOSER: assign roles -->
+    <section class="card hidden" id="card-chooser">
+      <h2 data-i18n="choose_h">เลือกสิ่งที่จะโหลด</h2>
+      <div id="chBoundWrap">
+        <label class="fld" data-i18n="choose_bound">ขอบเขตแปลง — polygon</label>
+        <div id="chBoundList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <div id="chLineWrap" style="margin-top:12px">
+        <label class="fld" data-i18n="choose_ab">เส้น AB — line</label>
+        <div id="chLineList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+      <p class="hint" data-i18n="choose_hint">แตะเพื่อเลือก (จะไฮไลต์บนแผนที่) · แตะซ้ำ = ไม่ใช้ · เลือกอย่างใดอย่างหนึ่ง หรือทั้งคู่ก็ได้</p>
+      <button class="btn block" id="btnLoad" style="margin-top:11px" data-i18n="choose_load">โหลดที่เลือก</button>
+    </section>
+
+    <!-- LOADED -->
+    <section class="card hidden" id="card-loaded">
+      <h2 data-i18n="loaded_h">ข้อมูลที่โหลด</h2>
+      <div class="kv" id="rowBound"><span class="k" data-i18n="kv_bound">ขอบเขต</span><span class="v" id="kvBound">–</span></div>
+      <div class="kv" id="rowArea"><span class="k" data-i18n="b_area">พื้นที่</span><span class="v mono" id="kvArea">–</span></div>
+      <div class="kv" id="rowLine"><span class="k" data-i18n="kv_line">เส้นที่โหลด</span><span class="v" id="kvLine">–</span></div>
+      <div class="legend">
+        <span id="lgBound"><i class="line" style="background:var(--c-bound)"></i><span data-i18n="lg_bound">ขอบเขต</span></span>
+        <span id="lgImp"><i class="line" style="background:var(--c-imp)"></i><span data-i18n="lg_imp">เส้นที่โหลด</span></span>
+        <span><i class="line" style="background:var(--c-ab)"></i><span data-i18n="lg_ab">เส้น AB</span></span>
+        <span><i class="dash"></i><span data-i18n="lg_abOrig">AB เดิม</span></span>
+        <span id="lgRows" class="hidden"><i class="line" style="background:var(--c-row)"></i><span data-i18n="lg_rows">แถวปลูก</span></span>
+        <span><i style="background:var(--c-a)"></i>A</span>
+        <span><i style="background:var(--c-b)"></i>B</span>
+      </div>
+    </section>
+
+    <!-- AB LINE -->
+    <section class="card hidden" id="card-ab">
+      <h2 data-i18n="ab_h">เส้น AB (แนวขับ)</h2>
+      <div class="row">
+        <button class="btn ghost" id="btnA" data-i18n="ab_setA">กำหนดจุด A</button>
+        <button class="btn ghost" id="btnB" data-i18n="ab_setB">กำหนดจุด B</button>
+        <button class="btn danger" id="btnClearAB" style="flex:0 0 52px" data-i18n-title="ab_clear">✕</button>
+      </div>
+      <button class="btn ghost sm block hidden" id="btnUseLine" style="margin-top:7px" data-i18n="ab_useLine">ใช้ปลายเส้นที่โหลด</button>
+      <p class="hint" id="abHint" data-i18n="ab_none">แตะ “กำหนดจุด A” แล้วแตะใกล้จุดที่ต้องการ (บนขอบเขต หรือบนเส้นก็ได้)</p>
+
+      <div class="instr hidden" id="abReadout">
+        <div class="cell"><div class="lab" data-i18n="ab_heading">ทิศทาง</div><div class="num mono"><span id="abBearing">–</span><small>°</small></div></div>
+        <div class="cell"><div class="lab" data-i18n="ab_length">ความยาว</div><div class="num mono"><span id="abLen">–</span><small>m</small></div></div>
+      </div>
+
+      <h2 style="margin-top:15px" data-i18n="off_h">ขยับเส้น AB (ขนานเส้นเดิม)</h2>
+      <div class="nudge">
+        <button class="btn ghost" id="offL" data-i18n="off_left">← ซ้าย</button>
+        <div class="val">
+          <label class="fld" style="text-align:center" data-i18n="off_value">ระยะขยับ (ซม.)</label>
+          <input class="in mono" id="offVal" type="number" value="0" step="1" inputmode="decimal">
+        </div>
+        <button class="btn ghost" id="offR" data-i18n="off_right">ขวา →</button>
+      </div>
+      <div class="row" style="margin-top:8px;align-items:flex-end">
+        <div style="flex:1"><label class="fld" data-i18n="off_step">ก้าวละ (ซม.)</label><input class="in mono" id="offStep" type="number" value="10" min="0.1" step="1" inputmode="decimal"></div>
+        <div style="flex:1"><button class="btn danger sm block" id="offReset" data-i18n="off_reset">รีเซ็ตเป็น 0</button></div>
+      </div>
+      <div class="sideNow" id="offNow"></div>
+      <p class="hint" data-i18n="off_sign">+ = ขวาของทิศ A→B · − = ซ้าย</p>
+    </section>
+
+    <!-- PLANTING ROWS (design aid only; never exported) -->
+    <section class="card hidden" id="card-rows">
+      <h2 data-i18n="rows_h">แถวปลูก</h2>
+      <label class="chk"><input type="checkbox" id="rowsOn"><span data-i18n="rows_show">แสดงแถวปลูกบนแผนที่</span></label>
+      <label class="fld" style="margin-top:4px" data-i18n="rows_sp">ระยะระหว่างแถว (ซม.)</label>
+      <input class="in mono" id="rowsSp" type="number" value="185" min="1" step="5" inputmode="decimal">
+      <div class="instr">
+        <div class="cell"><div class="lab" data-i18n="rows_count">จำนวนแถว</div><div class="num mono"><span id="rowsN">–</span></div></div>
+        <div class="cell"><div class="lab" data-i18n="rows_len">ความยาวรวม</div><div class="num mono"><span id="rowsL">–</span><small>m</small></div></div>
+      </div>
+      <p class="hint hidden" id="rowsWarn" data-i18n="rows_toomany">ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ</p>
+      <p class="hint" data-i18n="rows_note">เส้นแถวปลูกไว้ดูตอนออกแบบเท่านั้น — ไม่ถูกส่งออกไปในไฟล์</p>
+    </section>
+
+    <!-- EXPORT -->
+    <section class="card hidden" id="card-export">
+      <h2 data-i18n="export_h">ส่งออก</h2>
+      <label class="fld" data-i18n="fn_label">ชื่อไฟล์</label>
+      <input class="in mono" id="fname" value="field" data-i18n-ph="fn_ph" placeholder="field01">
+      <div class="exline" id="exNames"></div>
+      <p class="hint hidden" id="exNote"></p>
+      <div class="row" style="margin-top:11px">
+        <button class="btn" id="btnShp" data-i18n="export_shp">Shapefile (.zip)</button>
+        <button class="btn" id="btnKmz" data-i18n="export_kmz">KMZ</button>
+      </div>
+      <p class="hint" data-i18n="export_note">ส่งออกเฉพาะสิ่งที่ใช้จริง — สิ่งที่ไม่ได้โหลด/ไม่ได้ใช้ จะไม่ถูกส่งออก</p>
+    </section>
+
+    <section class="card" id="card-about">
+      <h2 data-i18n="about_h">ผู้พัฒนา</h2>
+      <div class="credit">
+        <div class="nm" data-i18n="dev_name">วสุ อุดมเพทายกุล</div>
+        <div class="dp" data-i18n="dev_dept">ภาควิชาวิศวกรรมระบบชีวภาพและเกษตร คณะวิศวกรรมศาสตร์ สจล.</div>
+      </div>
+      <a class="linkbtn" id="devMail" href="mailto:vasu.ud@kmitl.ac.th" style="display:inline-block;margin-top:7px">vasu.ud@kmitl.ac.th</a>
+      <button class="btn ghost sm block" id="btnFb" style="margin-top:11px" data-i18n="fb_open">แจ้งปัญหา / ข้อเสนอแนะ</button>
+    </section>
+
+    <div class="foot">
+      <button class="linkbtn" id="btnChangelog" data-i18n="changelog">บันทึกการแก้ไข</button>
+      <span>WGS84 · EPSG:4326</span>
+    </div>
+  </aside>
+
+  <div id="mapwrap">
+    <div id="frameBanner" data-i18n="iframe_warn">กำลังแสดงในกรอบตัวอย่าง — แผนที่ดาวเทียมและการดาวน์โหลดอาจถูกบล็อก กรุณาเปิดไฟล์ .html จริงในเบราว์เซอร์</div>
+    <div class="basepick" id="basePick">
+      <button id="bpSat" class="active" data-i18n="map_sat">ดาวเทียม</button>
+      <button id="bpOsm" data-i18n="map_osm">แผนที่</button>
+    </div>
+    <div id="map"></div>
+  </div>
+</main>
+
+<div id="fbWrap" class="modal hidden">
+  <div class="modalBox">
+    <h3 data-i18n="fb_h">แจ้งปัญหา / ข้อเสนอแนะ</h3>
+    <label class="fld" data-i18n="fb_msg">รายละเอียด</label>
+    <textarea class="in" id="fbMsg" data-i18n-ph="fb_msg_ph" placeholder="เจอปัญหาอะไร หรืออยากให้เพิ่มอะไร"></textarea>
+    <label class="fld" style="margin-top:9px" data-i18n="fb_email">อีเมลของคุณ (เผื่อติดต่อกลับ)</label>
+    <input class="in" id="fbEmail" type="email" inputmode="email" data-i18n-ph="fb_email_ph" placeholder="you@example.com">
+    <p class="hint" data-i18n="fb_note">กด “ส่ง” จะเปิดแอปอีเมลของคุณพร้อมข้อความ (ถึง vasu.ud@kmitl.ac.th) แล้วกดส่งในแอปอีเมลอีกครั้ง · ถ้าเปิดไม่ได้ ใช้ “คัดลอกข้อความ” แล้วส่งเอง</p>
+    <div class="row" style="margin-top:12px">
+      <button class="btn" id="fbSend" data-i18n="fb_send">ส่ง</button>
+      <button class="btn ghost" id="fbCopy" data-i18n="fb_copy">คัดลอกข้อความ</button>
+      <button class="btn ghost" id="fbClose" style="flex:0 0 52px">✕</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="bootErr"><div class="box">
+  <h3>โหลดแผนที่ไม่สำเร็จ / Map failed to load</h3>
+  <p>ไม่สามารถโหลดไลบรารีแผนที่ (Leaflet) ได้ — โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ตแล้วรีเฟรช</p>
+  <p>Could not load the map library (Leaflet). Check your internet connection and reload.</p>
+</div></div>
+
+<!-- ============ SCRIPT 1: Leaflet loader (cdnjs -> unpkg fallback) ============ -->
+<script>
+(function(){
+  var LV="1.9.4";
+  function css(href){var l=document.createElement("link");l.rel="stylesheet";l.href=href;document.head.appendChild(l);}
+  function js(src,ok,err){var s=document.createElement("script");s.src=src;s.onload=ok;s.onerror=err;document.head.appendChild(s);}
+  function fail(){var e=document.getElementById("bootErr");if(e)e.style.display="flex";}
+  css("https://cdnjs.cloudflare.com/ajax/libs/leaflet/"+LV+"/leaflet.min.css");
+  window._loadLeaflet=function(cb){
+    js("https://cdnjs.cloudflare.com/ajax/libs/leaflet/"+LV+"/leaflet.min.js",cb,function(){
+      css("https://unpkg.com/leaflet@"+LV+"/dist/leaflet.css");
+      js("https://unpkg.com/leaflet@"+LV+"/dist/leaflet.js",cb,fail);
+    });
+  };
+})();
+</script>
+
+<!-- ============ SCRIPT 2: app ============ -->
+<script>
+//MAIN-SCRIPT-BEGIN
+/* ===== APP META (APP_VER = single source) ===== */
+var APP_VER="1.8";
+var DEV_EMAIL="vasu.ud@kmitl.ac.th";
+var CHANGELOG=[
+  {v:"1.8",d:"2026-07-14",
+   th:["เพิ่ม “แถวปลูก”: เส้นขนานเส้น AB ตัดด้วยขอบแปลง ปรับระยะระหว่างแถวได้ (ค่าเริ่มต้น 185 ซม.)",
+       "แสดงจำนวนแถวและความยาวรวมของแถวปลูก",
+       "แถวปลูกเป็นเส้นบางสีจาง เปิด/ปิดได้ (ค่าเริ่มต้น = ปิด) และ ไม่ถูกส่งออกไปในไฟล์ — ไว้ดูตอนออกแบบเท่านั้น",
+       "ระบุผู้พัฒนา + ปุ่มแจ้งปัญหา/ข้อเสนอแนะ (เปิดแอปอีเมลพร้อมข้อความ ส่งถึง vasu.ud@kmitl.ac.th)"],
+   en:["New “planting rows”: lines parallel to the AB line, clipped to the boundary, with an adjustable row spacing (default 185 cm)",
+       "Shows the row count and their total length",
+       "Rows are thin and muted, can be toggled (default off), and are NEVER exported — they are a design aid only",
+       "Developer credit + a feedback button (opens your mail app pre-filled, addressed to vasu.ud@kmitl.ac.th)"]},
+  {v:"1.7",d:"2026-07-14",
+   th:["จุด A โผล่ทันทีที่กดเลือก ไม่ต้องรอให้เลือก B ครบก่อน",
+       "จุด A/B และป้ายชื่อ เลื่อนตามเส้นที่ขยับแล้ว — เพราะเส้นที่เอาไปใช้จริง (และที่ export) คือเส้นที่ขยับ ไม่ใช่เส้นเดิม",
+       "เมื่อขยับเส้น มุมเดิมที่เคยเลือกจะกลับมาเป็นจุดขอบเขตปกติ ไม่หายไปเฉย ๆ ส่วนเส้นประยังบอกตำแหน่งเดิมไว้"],
+   en:["Point A appears the moment you pick it — no waiting until B is set",
+       "The A/B dots and labels now ride the nudged line, because the nudged line is the one you drive (and export)",
+       "Once nudged, the original corner returns as a normal boundary vertex instead of vanishing; the dashed ghost still marks where the line was"]},
+  {v:"1.6",d:"2026-07-14",
+   th:["เลิกกระจายป้าย L1/L2 — ปล่อยให้ทับกันตรงกลางเส้นตามจริง จะได้เห็นเลยว่าสองเส้นนี้ซ้อนกันอยู่ (ของเดิมทำให้เข้าใจผิดว่าเป็นคนละเส้นคนละที่)",
+       "กดเลือกอันไหน เส้นนั้นถูกดึงขึ้นบนสุด และป้ายแสดง “ชื่อจริง” ของมัน (เช่น L2 · Ab · A) ไม่ใช่แค่รหัส",
+       "สลับ L1 ↔ L2 แล้วป้ายอยู่ตำแหน่งเดิม เปลี่ยนแค่ชื่อ = ยืนยันว่าเป็นเส้นที่ทับกัน"],
+   en:["Stopped spreading the L1/L2 badges apart — they now sit on top of each other, on the line, which is the truth: it shows you the two lines are stacked (spreading them implied two lines in two places)",
+       "Tapping one pulls that line to the top and its badge shows the real name (e.g. L2 · Ab · A), not just the code",
+       "Toggling L1 ↔ L2 keeps the badge in the same spot and only the name changes — confirming they overlap"]},
+  {v:"1.5",d:"2026-07-14",
+   th:["SW Maps: ถ้า layer เดียวมีหลาย feature จะเอาชื่อ feature มาต่อท้ายด้วย (เช่น “Ab · A” / “Ab · B”) — เดิมโชว์ชื่อ layer ซ้ำกันจนแยกไม่ออก",
+       "ตัวเลือกที่กดเลือก ถูกวาดทับขึ้นมาบนสุดเสมอ (เดิมโดนตัวอื่นทับ)",
+       "ป้าย L1/L2 กระจายตำแหน่งตามความยาวเส้น ไม่ทับกัน แม้เส้นจะซ้อนกันสนิท",
+       "Android: กดเลือกไฟล์แล้วขึ้นให้เลือกแต่รูป — แก้โดยตั้ง accept=*/* เฉพาะบน Android (iOS ยังไม่ใส่ accept ตามเดิม)",
+       "ถ้าเผลอเลือกไฟล์รูปมา จะบอกวิธีแก้ให้ แทนที่จะขึ้น error งง ๆ"],
+   en:["SW Maps: when one layer holds several features the feature name is appended (e.g. “Ab · A” / “Ab · B”) — they used to share the layer name and were indistinguishable",
+       "The candidate you tap is now always drawn on top (it could be covered by the others)",
+       "L1/L2 badges are spread along the line so they never overlap, even when two lines sit on top of each other",
+       "Android: the file picker offered photos only — fixed by setting accept=*/* on Android (iOS still ships no accept, as before)",
+       "Picking an image by mistake now explains how to fix it instead of a cryptic error"]},
+  {v:"1.4",d:"2026-07-14",
+   th:["ตอนเลือกสิ่งที่จะโหลด: วาดทุกตัวเลือกลงบนแผนที่ทันที + ซูมไปที่ตำแหน่งจริง",
+       "ตัวที่กดเลือกจะไฮไลต์เด่นบนแผนที่ ตัวที่ไม่เลือกเป็นสีเทาจาง — เห็นชัดว่าอันไหนคืออันไหน",
+       "ติดป้ายกำกับ P1/P2… (polygon) และ L1/L2… (line) ตรงกันทั้งบนปุ่มและบนแผนที่ — แก้ปัญหาชื่อซ้ำกันแยกไม่ออก"],
+   en:["The import chooser now draws every candidate on the map and zooms to it",
+       "The one you tap lights up; the rest stay dim grey — you can see which is which",
+       "Matching tags P1/P2… (polygons) and L1/L2… (lines) on both the buttons and the map — fixes duplicate names being indistinguishable"]},
+  {v:"1.3",d:"2026-07-14",
+   th:["ตอนนำเข้า ถ้ามีมากกว่า 1 feature ให้เลือกเองว่าอะไรเป็นขอบเขต อะไรเป็นเส้น AB (ไม่เลือกก็ได้)",
+       "ขอบเขตไม่บังคับแล้ว — ใช้แอปสร้างเฉพาะเส้น AB ได้ (ส่งออกเฉพาะ _AB)",
+       "เลือกจุด A/B ได้จาก ทุก vertex ทั้งบนขอบเขตและบนเส้นที่โหลดเข้ามา",
+       "เพิ่มปุ่ม “ใช้ปลายเส้นที่โหลด” เพื่อตั้ง A/B กลับเป็นปลายเส้นเดิม"],
+   en:["On import, if there is more than one feature you choose which is the boundary and which is the AB line (either may be skipped)",
+       "Boundary is now optional — the app can produce an AB line alone (exports _AB only)",
+       "A/B can be picked from ANY vertex, on the boundary or on the loaded line",
+       "New “use the loaded line's endpoints” button to reset A/B"]},
+  {v:"1.2",d:"2026-07-13",
+   th:["ขยับเส้น AB เป็นหน่วยเซนติเมตร (ก้าวละ 10 ซม. เป็นค่าเริ่มต้น)",
+       "นำเข้าเส้น (LineString / polyline / SW Maps LINE) มาแสดงและใช้เป็นเส้น AB ได้",
+       "ส่งออกเฉพาะสิ่งที่ใช้จริง",
+       "ชื่อโฟลเดอร์ที่จะส่งออกจะจางไว้จนกว่าจะพร้อม"],
+   en:["AB nudge in centimetres (default step 10 cm)",
+       "Imported lines can be drawn and used as the AB line",
+       "Only what you actually use is exported",
+       "Export folder names dimmed until ready"]},
+  {v:"1.1",d:"2026-07-13",
+   th:["เลือกจุด A/B ด้วยนิ้วง่ายขึ้น — แตะที่ไหนก็ได้ ระบบ snap เข้าจุดที่ใกล้ที่สุด",
+       "ปุ่มสลับ ดาวเทียม/แผนที่ ขนาดใหญ่บนแผนที่",
+       "ขยับเส้น AB ขนานเส้นเดิม (ซ้าย/ขวา)",
+       "ส่งออก KMZ ควบคู่กับ Shapefile .zip"],
+   en:["Easier touch selection of A/B — tap anywhere, snaps to the nearest vertex",
+       "Large on-map Satellite/Map switch",
+       "Nudge the AB line parallel to itself (left/right)",
+       "KMZ export alongside the Shapefile .zip"]},
+  {v:"1.0",d:"2026-07-10",
+   th:["เวอร์ชันแรก — นำเข้า KML/KMZ/Shapefile/ZIP, เลือก A/B จากมุมขอบเขต, ส่งออก Shapefile"],
+   en:["Initial release — import KML/KMZ/Shapefile/ZIP, set A/B from boundary vertices, export Shapefile"]}
+];
+
+/* ===== I18N (th default + en) ===== */
+var I18N={
+ th:{
+  app_title:"ออกแบบแปลง AutoSteer", app_sub:"Boundary + AB Line",
+  import_h:"นำเข้าไฟล์", import_drop:"แตะเพื่อเลือกไฟล์ หรือวางไฟล์ที่นี่", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps",
+  choose_h:"เลือกสิ่งที่จะโหลด", choose_bound:"ขอบเขตแปลง — polygon", choose_ab:"เส้น AB — line",
+  choose_hint:"แตะเพื่อเลือก (จะไฮไลต์บนแผนที่) · แตะซ้ำ = ไม่ใช้ · เลือกอย่างใดอย่างหนึ่ง หรือทั้งคู่ก็ได้",
+  choose_load:"โหลดที่เลือก", choose_none:"ไม่มีในไฟล์นี้", choose_nosel:"ยังไม่ได้เลือกอะไรเลย",
+  pts:"จุด",
+  loaded_h:"ข้อมูลที่โหลด", kv_bound:"ขอบเขต", kv_line:"เส้นที่โหลด", b_area:"พื้นที่",
+  lg_bound:"ขอบเขต", lg_ab:"เส้น AB", lg_abOrig:"AB เดิม", lg_imp:"เส้นที่โหลด", lg_rows:"แถวปลูก",
+  rows_h:"แถวปลูก", rows_show:"แสดงแถวปลูกบนแผนที่", rows_sp:"ระยะระหว่างแถว (ซม.)",
+  rows_count:"จำนวนแถว", rows_len:"ความยาวรวม",
+  rows_toomany:"ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ",
+  rows_note:"เส้นแถวปลูกไว้ดูตอนออกแบบเท่านั้น — ไม่ถูกส่งออกไปในไฟล์",
+  about_h:"ผู้พัฒนา",
+  dev_name:"วสุ อุดมเพทายกุล",
+  dev_dept:"ภาควิชาวิศวกรรมระบบชีวภาพและเกษตร คณะวิศวกรรมศาสตร์ สจล.",
+  fb_open:"แจ้งปัญหา / ข้อเสนอแนะ", fb_h:"แจ้งปัญหา / ข้อเสนอแนะ",
+  fb_msg:"รายละเอียด", fb_msg_ph:"เจอปัญหาอะไร หรืออยากให้เพิ่มอะไร",
+  fb_email:"อีเมลของคุณ (เผื่อติดต่อกลับ)", fb_email_ph:"you@example.com",
+  fb_note:"กด “ส่ง” จะเปิดแอปอีเมลของคุณพร้อมข้อความ (ถึง vasu.ud@kmitl.ac.th) แล้วกดส่งในแอปอีเมลอีกครั้ง · ถ้าเปิดไม่ได้ ใช้ “คัดลอกข้อความ” แล้วส่งเอง",
+  fb_send:"ส่ง", fb_copy:"คัดลอกข้อความ",
+  fb_need:"กรุณาพิมพ์รายละเอียดก่อน", fb_copied:"คัดลอกแล้ว — วางในอีเมลถึง vasu.ud@kmitl.ac.th",
+  fb_nomail:"เปิดแอปอีเมลไม่ได้ — ใช้ “คัดลอกข้อความ” แทน",
+  ab_h:"เส้น AB (แนวขับ)", ab_setA:"กำหนดจุด A", ab_setB:"กำหนดจุด B", ab_clear:"ล้าง A/B",
+  ab_useLine:"ใช้ปลายเส้นที่โหลด",
+  ab_none:"แตะ “กำหนดจุด A” แล้วแตะใกล้จุดที่ต้องการ (บนขอบเขต หรือบนเส้นก็ได้)",
+  ab_pickA:"แตะใกล้จุดที่ต้องการ → เลือกเป็นจุด A (ได้ทุกจุดบนขอบเขตและบนเส้น)",
+  ab_pickB:"แตะใกล้จุดที่ต้องการ → เลือกเป็นจุด B (ได้ทุกจุดบนขอบเขตและบนเส้น)",
+  ab_heading:"ทิศทาง", ab_length:"ความยาว",
+  off_h:"ขยับเส้น AB (ขนานเส้นเดิม)", off_left:"← ซ้าย", off_right:"ขวา →",
+  off_value:"ระยะขยับ (ซม.)", off_step:"ก้าวละ (ซม.)", off_reset:"รีเซ็ตเป็น 0",
+  off_sign:"+ = ขวาของทิศ A→B · − = ซ้าย",
+  off_none:"อยู่บนเส้นเดิม", off_now:"ขยับ {0} ซม. ไปทาง{1}", off_now_m:"ขยับ {0} ซม. ({1} ม.) ไปทาง{2}",
+  side_left:"ซ้าย", side_right:"ขวา",
+  export_h:"ส่งออก", fn_label:"ชื่อไฟล์", fn_ph:"field01",
+  export_shp:"Shapefile (.zip)", export_kmz:"KMZ",
+  ex_boundonly:"ยังไม่มีเส้น AB — จะส่งออกเฉพาะขอบเขต",
+  ex_abonly:"ไม่มีขอบเขต — จะส่งออกเฉพาะเส้น AB",
+  export_note:"ส่งออกเฉพาะสิ่งที่ใช้จริง — สิ่งที่ไม่ได้โหลด/ไม่ได้ใช้ จะไม่ถูกส่งออก",
+  changelog:"บันทึกการแก้ไข", unit_rai:"ไร่",
+  theme_toLight:"โหมดสว่าง", theme_toDark:"โหมดมืด", map_osm:"แผนที่", map_sat:"ดาวเทียม",
+  need_any:"ยังไม่มีอะไรให้ส่งออก",
+  err_read:"อ่านไฟล์ไม่สำเร็จ: {0}", err_nofeat:"ไม่พบ polygon หรือเส้นในไฟล์นี้", err_nozip:"ไม่พบ .kml หรือ .shp ในไฟล์บีบอัดนี้",
+  err_isimage:"นี่เป็นไฟล์รูป ไม่ใช่ไฟล์แผนที่ — ถ้าเบราว์เซอร์ให้เลือกได้แต่รูป ให้เปิดไฟล์ .html นี้ใน Chrome แล้วเลือกจาก “Files”",
+  iframe_warn:"กำลังแสดงในกรอบตัวอย่าง — แผนที่ดาวเทียมและการดาวน์โหลดอาจถูกบล็อก กรุณาเปิดไฟล์ .html จริงในเบราว์เซอร์"
+ },
+ en:{
+  app_title:"AutoSteer Field Designer", app_sub:"Boundary + AB Line",
+  import_h:"Import file", import_drop:"Tap to choose a file, or drop one here", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps",
+  choose_h:"Choose what to load", choose_bound:"Field boundary — polygon", choose_ab:"AB line — line",
+  choose_hint:"Tap to select (it lights up on the map) · tap again = don't use · either one, or both",
+  choose_load:"Load selected", choose_none:"none in this file", choose_nosel:"Nothing selected yet",
+  pts:"pts",
+  loaded_h:"Loaded", kv_bound:"Boundary", kv_line:"Loaded line", b_area:"Area",
+  lg_bound:"Boundary", lg_ab:"AB line", lg_abOrig:"Original AB", lg_imp:"Loaded line", lg_rows:"Planting rows",
+  rows_h:"Planting rows", rows_show:"Show planting rows on the map", rows_sp:"Row spacing (cm)",
+  rows_count:"Rows", rows_len:"Total length",
+  rows_toomany:"Spacing too small (over 2000 rows) — try a larger spacing",
+  rows_note:"Planting rows are a design aid only — they are never exported",
+  about_h:"Developer",
+  dev_name:"Vasu Udompetaikul",
+  dev_dept:"Department of Biosystems and Agricultural Engineering, School of Engineering, KMITL",
+  fb_open:"Report an issue / suggestion", fb_h:"Report an issue / suggestion",
+  fb_msg:"Details", fb_msg_ph:"What went wrong, or what would you like added?",
+  fb_email:"Your email (so you can be reached)", fb_email_ph:"you@example.com",
+  fb_note:"“Send” opens your mail app with the message ready (to vasu.ud@kmitl.ac.th) — press send there · if it cannot open, use “Copy” and send it yourself",
+  fb_send:"Send", fb_copy:"Copy text",
+  fb_need:"Please write some details first", fb_copied:"Copied — paste it into an email to vasu.ud@kmitl.ac.th",
+  fb_nomail:"Could not open a mail app — use “Copy text” instead",
+  ab_h:"AB Line (guidance)", ab_setA:"Set point A", ab_setB:"Set point B", ab_clear:"Clear A/B",
+  ab_useLine:"Use the loaded line's endpoints",
+  ab_none:"Tap “Set point A”, then tap near any vertex (on the boundary or on the line)",
+  ab_pickA:"Tap near any vertex → it becomes point A (boundary or line)",
+  ab_pickB:"Tap near any vertex → it becomes point B (boundary or line)",
+  ab_heading:"Heading", ab_length:"Length",
+  off_h:"Nudge AB line (parallel)", off_left:"← Left", off_right:"Right →",
+  off_value:"Offset (cm)", off_step:"Step (cm)", off_reset:"Reset to 0",
+  off_sign:"+ = right of A→B heading · − = left",
+  off_none:"On the original line", off_now:"Shifted {0} cm to the {1}", off_now_m:"Shifted {0} cm ({1} m) to the {2}",
+  side_left:"left", side_right:"right",
+  export_h:"Export", fn_label:"File name", fn_ph:"field01",
+  export_shp:"Shapefile (.zip)", export_kmz:"KMZ",
+  ex_boundonly:"No AB line yet — the boundary alone will be exported",
+  ex_abonly:"No boundary — the AB line alone will be exported",
+  export_note:"Only what you actually use is exported — anything not loaded or not used is left out",
+  changelog:"Changelog", unit_rai:"rai",
+  theme_toLight:"Light mode", theme_toDark:"Dark mode", map_osm:"Map", map_sat:"Satellite",
+  need_any:"Nothing to export yet",
+  err_read:"Could not read file: {0}", err_nofeat:"No polygon or line found in this file", err_nozip:"No .kml or .shp found in this archive",
+  err_isimage:"That is an image, not a map file — if your browser only offers photos, open this .html in Chrome and pick from “Files”",
+  iframe_warn:"Running in a preview frame — satellite tiles and downloads may be blocked. Open the real .html file in a browser."
+ }
+};
+var LANG="th";
+function t(key){var s=(I18N[LANG]&&I18N[LANG][key])||(I18N.th[key])||key;
+  for(var i=1;i<arguments.length;i++){s=s.replace("{"+(i-1)+"}",arguments[i]);}return s;}
+function i18nParity(){
+  var a=Object.keys(I18N.th),b=Object.keys(I18N.en),miss=[];
+  a.forEach(function(k){if(b.indexOf(k)<0)miss.push("en:"+k);});
+  b.forEach(function(k){if(a.indexOf(k)<0)miss.push("th:"+k);});
+  return miss;
+}
+function applyLang(){
+  var els=document.querySelectorAll("[data-i18n]"),i;
+  for(i=0;i<els.length;i++){els[i].textContent=t(els[i].getAttribute("data-i18n"));}
+  var ph=document.querySelectorAll("[data-i18n-ph]");
+  for(i=0;i<ph.length;i++){ph[i].setAttribute("placeholder",t(ph[i].getAttribute("data-i18n-ph")));}
+  var tt=document.querySelectorAll("[data-i18n-title]");
+  for(i=0;i<tt.length;i++){tt[i].setAttribute("title",t(tt[i].getAttribute("data-i18n-title")));}
+  document.getElementById("langBtn").textContent=(LANG==="th")?"EN":"ไทย";
+  document.documentElement.lang=LANG;
+  syncThemeBtn(); renderChooser(); updateInfo(); updateAbHint();
+}
+function setLang(l){LANG=l;applyLang();}
+/* ============================================================================
+ * geo_io_toolkit.js  (embedded verbatim — pure JS, no dependencies)
+ * ==========================================================================*/
+const PI = Math.PI;
+const WGS84_PRJ='GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]]';
+
+const doubleArea=(xp,yp,x1,y1,x2,y2)=>(x2-x1)*(yp-y1)-(xp-x1)*(y2-y1);
+const signedArea=r=>{let s=0;for(let i=0;i<r.length-1;i++)s+=r[i][0]*r[i+1][1]-r[i+1][0]*r[i][1];return s/2;};
+function bboxOf(rings){let a=Infinity,b=Infinity,c=-Infinity,d=-Infinity;for(const r of rings)for(const[x,y]of r){if(x<a)a=x;if(x>c)c=x;if(y<b)b=y;if(y>d)d=y;}return[a,b,c,d];}
+function crc32(b){let c=~0;for(let i=0;i<b.length;i++){c^=b[i];for(let k=0;k<8;k++)c=(c>>>1)^(0xEDB88320&-(c&1));}return ~c>>>0;}
+
+const findAng=(x1,y1,x2,y2)=>Math.atan2(y2-y1,x2-x1);
+const findLength=(x1,y1,x2,y2)=>Math.hypot(x2-x1,y2-y1);
+const pointToLine=(xp,yp,x1,y1,x2,y2)=>doubleArea(xp,yp,x1,y1,x2,y2)/findLength(x1,y1,x2,y2);
+function LL2UTM(lat,lon){
+  const latr=lat*PI/180, Zone=Math.floor((180+lon)/6)+1, C=6*Zone-183;
+  const lonr=lon*PI/180, lon0=C*PI/180, c=Math.cos(latr), L=lonr-lon0;
+  const a=6378137,b=6356752.31425,al=6367449.1458,be=-2.51882792e-3,ga=2.64354e-6,de=-3.45e-9,ep=5e-12;
+  const Bl=al*(latr+be*Math.sin(2*latr)+ga*Math.sin(4*latr)+de*Math.sin(6*latr)+ep*Math.sin(8*latr));
+  const esq=(a*a-b*b)/(b*b),et=esq*c*c,N=a*a/(b*Math.sqrt(1+et)),T=Math.tan(latr);
+  const y=Bl+T*N*c**2*L**2/2+T*N*c**4*(5-T**2+9*et+4*et**2)*L**4/24
+        +T*N*c**6*(61-58*T**2+T**4+270*et-330*T**2*et)*L**6/720
+        +T*N*c**8*(1385-3111*T**2+543*T**4-T**6)*L**8/40320;
+  const x=N*c*L+N*c**3*(1-T**2+et)*L**3/6+N*c**5*(5-18*T**2+T**4+14*et-58*T**2*et)*L**5/120
+        +N*c**7*(61-479*T**2+179*T**4-T**6)*L**7/5040;
+  return {E:x*0.9996+500000,N:y*0.9996,Zone};
+}
+function UTM2LL(E,N,Zone){
+  const x=(E-500000)/0.9996,y=N/0.9996,C=6*Zone-183,lon0=C*PI/180;
+  const a=6378137,b=6356752.31425,al=6367449.1458,be=2.51882658e-3,ga=3.70095e-6,de=7.45e-9,ep=17e-12;
+  const yB=y/al,lf=yB+be*Math.sin(2*yB)+ga*Math.sin(4*yB)+de*Math.sin(6*yB)+ep*Math.sin(8*yB);
+  const cf=Math.cos(lf),esq=(a*a-b*b)/(b*b),ef=esq*cf*cf,nf=a*a/(b*Math.sqrt(1+ef)),tf=Math.tan(lf);
+  const latr=lf+tf*(-1-ef)*x**2/(2*nf**2)
+        +tf*(5+3*tf**2+6*ef-6*tf**2*ef-3*ef**2-9*tf**2*ef**2)*x**4/(24*nf**4)
+        +tf*(-61-90*tf**2-45*tf**4-107*ef+162*tf**2*ef+45*tf**4*ef)*x**6/(720*nf**6)
+        +tf*(1385+3633*tf**2+4095*tf**4+1575*tf**6)*x**8/(40320*nf**8);
+  const lonr=lon0+x/(nf*cf)+(-1-2*tf**2-ef)*x**3/(6*nf**3*cf)
+        +(5+28*tf**2+24*tf**4+6*ef+8*tf**2*ef)*x**5/(120*nf**5*cf)
+        +(-61-662*tf**2-1320*tf**4-720*tf**6)*x**7/(5040*nf**7*cf);
+  return {lat:latr*180/PI,lon:lonr*180/PI};
+}
+function projectedLL(lat,lon,dist,theta){
+  const u=LL2UTM(lat,lon);
+  return UTM2LL(u.E+dist*Math.cos(theta),u.N+dist*Math.sin(theta),u.Zone);
+}
+function windingNumber(px,py,B,tol){
+  if(tol<0.001)tol=0.001; let wn=0;
+  for(let i=0;i<B.length-1;i++){
+    const x1=B[i].x,y1=B[i].y,x2=B[i+1].x,y2=B[i+1].y;
+    if((px===x1&&py===y1)||(px===x2&&py===y2))return 999;
+    const iL=pointToLine(px,py,x1,y1,x2,y2);
+    if(Math.abs(iL)<tol){
+      const L1p=findLength(x1,y1,px,py),Lp2=findLength(px,py,x2,y2),L12=findLength(x1,y1,x2,y2);
+      const a1=findAng(x1,y1,x2,y2)-findAng(x1,y1,px,py);
+      if(Math.abs((L1p+Lp2)*Math.cos(a1))-L12<tol)return 999;
+    }
+    if(y1<=py){if(y2>py&&iL>0)wn++;} else {if(y2<=py&&iL<0)wn--;}
+  } return wn;
+}
+const ensureCW=r=>signedArea(r)>0?r.slice().reverse():r;
+function writeShapefile(shapes,fields){
+  const recs=[]; const shpType=shapes[0].type==='point'?1:shapes[0].type==='polyline'?3:5;
+  for(const s of shapes){
+    let buf;
+    if(s.type==='point'){const[x,y]=s.parts[0][0];buf=new ArrayBuffer(20);const dv=new DataView(buf);
+      dv.setInt32(0,1,true);dv.setFloat64(4,x,true);dv.setFloat64(12,y,true);
+    } else {
+      const parts=s.parts,all=[].concat(...parts),nP=parts.length,nPt=all.length,[x0,y0,x1,y1]=bboxOf(parts);
+      buf=new ArrayBuffer(44+4*nP+16*nPt);const dv=new DataView(buf);
+      dv.setInt32(0,shpType,true);dv.setFloat64(4,x0,true);dv.setFloat64(12,y0,true);dv.setFloat64(20,x1,true);dv.setFloat64(28,y1,true);
+      dv.setInt32(36,nP,true);dv.setInt32(40,nPt,true);
+      let o=44,idx=0;for(const p of parts){dv.setInt32(o,idx,true);o+=4;idx+=p.length;}
+      for(const[x,y]of all){dv.setFloat64(o,x,true);dv.setFloat64(o+8,y,true);o+=16;}
+    }
+    recs.push(new Uint8Array(buf));
+  }
+  let cw=0;const offs=[];for(const r of recs){offs.push(50+cw);cw+=4+r.length/2;}
+  const shpW=50+cw,shp=new Uint8Array(shpW*2),sdv=new DataView(shp.buffer);
+  const[Xa,Ya,Xb,Yb]=bboxOf([].concat(...shapes.map(s=>s.parts)));
+  sdv.setInt32(0,9994);sdv.setInt32(24,shpW);sdv.setInt32(28,1000,true);sdv.setInt32(32,shpType,true);
+  sdv.setFloat64(36,Xa,true);sdv.setFloat64(44,Ya,true);sdv.setFloat64(52,Xb,true);sdv.setFloat64(60,Yb,true);
+  let pos=100;recs.forEach((r,i)=>{sdv.setInt32(pos,i+1);sdv.setInt32(pos+4,r.length/2);shp.set(r,pos+8);pos+=8+r.length;});
+  const shx=new Uint8Array(100+8*recs.length),xdv=new DataView(shx.buffer);
+  xdv.setInt32(0,9994);xdv.setInt32(24,50+4*recs.length);xdv.setInt32(28,1000,true);xdv.setInt32(32,shpType,true);
+  xdv.setFloat64(36,Xa,true);xdv.setFloat64(44,Ya,true);xdv.setFloat64(52,Xb,true);xdv.setFloat64(60,Yb,true);
+  recs.forEach((r,i)=>{xdv.setInt32(100+i*8,offs[i]);xdv.setInt32(100+i*8+4,r.length/2);});
+  const enc=new TextEncoder(),hL=32+32*fields.length+1,rL=1+fields.reduce((a,f)=>a+f.length,0);
+  const dbf=new Uint8Array(hL+rL*shapes.length+1),ddv=new DataView(dbf.buffer);
+  dbf[0]=0x03;const dt=new Date();dbf[1]=dt.getFullYear()-1900;dbf[2]=dt.getMonth()+1;dbf[3]=dt.getDate();dbf[29]=0x57;
+  ddv.setInt32(4,shapes.length,true);ddv.setInt16(8,hL,true);ddv.setInt16(10,rL,true);
+  let fo=32;for(const f of fields){const nm=enc.encode(f.name.substring(0,10));for(let i=0;i<nm.length;i++)dbf[fo+i]=nm[i];
+    dbf[fo+11]=0x43;dbf[fo+16]=f.length&0xff;dbf[fo+17]=0;fo+=32;}
+  dbf[fo++]=0x0D;
+  for(const s of shapes){dbf[fo++]=0x20;for(const f of fields){let v=(s.attrs[f.name]??'').toString().substring(0,f.length);
+    const bb=enc.encode(v);for(let i=0;i<f.length;i++)dbf[fo+i]=i<bb.length?bb[i]:0x20;fo+=f.length;}}
+  dbf[fo]=0x1A;
+  return {shp,shx,dbf,prj:enc.encode(WGS84_PRJ)};
+}
+function parseSHP(bytes){
+  const dv=new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  if(dv.getInt32(0,false)!==9994) throw new Error('Cannot read .shp (not a valid shapefile)');
+  const end=Math.min(bytes.byteLength, dv.getInt32(24,false)*2);
+  const feats=[]; let p=100;
+  while(p+8<=end){
+    const recLenWords=dv.getInt32(p+4,false); const o=p+8; const st=dv.getInt32(o,true);
+    const isPoly=(st===5||st===15||st===25), isLine=(st===3||st===13||st===23);
+    if(isPoly||isLine){
+      const numParts=dv.getInt32(o+36,true), numPoints=dv.getInt32(o+40,true);
+      const idx=[]; let q=o+44; for(let i=0;i<numParts;i++){idx.push(dv.getInt32(q,true)); q+=4;}
+      const pts=[]; for(let i=0;i<numPoints;i++){ pts.push({lon:dv.getFloat64(q+i*16,true), lat:dv.getFloat64(q+i*16+8,true)}); }
+      const rings=[]; for(let i=0;i<numParts;i++){ rings.push(pts.slice(idx[i], (i+1<numParts)?idx[i+1]:numPoints)); }
+      feats.push({type:isPoly?'polygon':'polyline', rings});
+    }
+    p=p+8+recLenWords*2;
+  }
+  return feats;
+}
+function parseDBFField(bytes, fieldName){
+  if(bytes.byteLength<32) return [];
+  const dv=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength), dec=new TextDecoder();
+  const nRec=dv.getInt32(4,true), hSize=dv.getUint16(8,true), rSize=dv.getUint16(10,true);
+  let o=32, off=1, fOff=-1, fLen=0;
+  while(o<hSize && bytes[o]!==0x0d){
+    const nm=dec.decode(bytes.subarray(o,o+11)).replace(/\0[\s\S]*$/,'');
+    const len=bytes[o+16];
+    if(nm.toLowerCase()===fieldName.toLowerCase()){fOff=off; fLen=len;}
+    off+=len; o+=32;
+  }
+  const out=[]; if(fOff<0) return out;
+  for(let i=0;i<nRec;i++){ const ro=hSize+i*rSize+fOff; out.push(dec.decode(bytes.subarray(ro,ro+fLen)).trim()); }
+  return out;
+}
+async function _inflateRaw(bytes){
+  if(typeof DecompressionStream==='undefined')
+    throw new Error('This browser cannot inflate (no DecompressionStream)');
+  const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+function makeZip(files){
+  const enc=new TextEncoder(),chunks=[],central=[];let off=0;
+  for(const f of files){const nm=enc.encode(f.name),data=f.data,crc=crc32(data);
+    const lh=new Uint8Array(30+nm.length),dv=new DataView(lh.buffer);
+    dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint32(14,crc,true);
+    dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,nm.length,true);lh.set(nm,30);
+    chunks.push(lh,data);
+    const ch=new Uint8Array(46+nm.length),cv=new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint32(16,crc,true);
+    cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nm.length,true);
+    cv.setUint32(42,off,true);ch.set(nm,46);central.push(ch);off+=lh.length+data.length;}
+  let cd=0;central.forEach(c=>cd+=c.length);
+  const end=new Uint8Array(22),ev=new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cd,true);ev.setUint32(16,off,true);
+  const out=new Uint8Array(off+cd+22);let p=0;
+  for(const c of chunks){out.set(c,p);p+=c.length;}for(const c of central){out.set(c,p);p+=c.length;}out.set(end,p);
+  return out;
+}
+async function readZipEntries(buf){
+  const u8=new Uint8Array(buf), dv=new DataView(buf);
+  let eocd=-1;
+  for(let i=u8.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+  if(eocd<0) throw new Error('Corrupt zip (no end-of-central-directory)');
+  const cdCount=dv.getUint16(eocd+10,true), cdOff=dv.getUint32(eocd+16,true);
+  const out=[]; let p=cdOff;
+  for(let i=0;i<cdCount;i++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true), compSize=dv.getUint32(p+20,true);
+    const nLen=dv.getUint16(p+28,true), xLen=dv.getUint16(p+30,true), cLen=dv.getUint16(p+32,true);
+    const lho=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nLen));
+    const lnLen=dv.getUint16(lho+26,true), lxLen=dv.getUint16(lho+28,true);
+    const start=lho+30+lnLen+lxLen, comp=u8.subarray(start,start+compSize);
+    const bytes = method===0 ? comp : await _inflateRaw(comp);
+    out.push({name, bytes});
+    p+=46+nLen+xLen+cLen;
+  }
+  return out;
+}
+const xmlEsc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fnSafe=s=>String(s||'').trim().replace(/[^\w\-]+/g,'_').replace(/^_+|_+$/g,'')||'field';
+function ringKML(r){return r.map(p=>p[0]+','+p[1]).join(' ');}
+function _coordStr(s){
+  const raw=s.trim().split(/\s+/), pts=[];
+  for(const tok of raw){ const c=tok.split(','); if(c.length<2)continue;
+    const lon=parseFloat(c[0]),lat=parseFloat(c[1]); if(isFinite(lon)&&isFinite(lat))pts.push({lat,lon}); }
+  if(pts.length>1){const a=pts[0],b=pts[pts.length-1]; if(Math.abs(a.lat-b.lat)<1e-9&&Math.abs(a.lon-b.lon)<1e-9)pts.pop();}
+  return pts;
+}
+function parseKMLPolygons(text){
+  const doc=new DOMParser().parseFromString(text,'text/xml');
+  if(doc.querySelector('parsererror')) throw new Error('Cannot read KML (malformed XML)');
+  const out=[];
+  for(const pm of [...doc.getElementsByTagName('Placemark')]){
+    const nm=(pm.getElementsByTagName('name')[0]?.textContent||'').trim();
+    const polys=pm.getElementsByTagName('Polygon');
+    for(let i=0;i<polys.length;i++){ const ce=polys[i].getElementsByTagName('coordinates')[0]; if(!ce)continue;
+      const pts=_coordStr(ce.textContent); if(pts.length>=3) out.push({label:nm||`Polygon ${out.length+1}`, points:pts}); }
+  }
+  if(!out.length){
+    const poly=doc.getElementsByTagName('Polygon')[0];
+    const ce=(poly?poly:doc).getElementsByTagName('coordinates')[0];
+    if(ce){const pts=_coordStr(ce.textContent); if(pts.length>=3)out.push({label:'Boundary', points:pts});}
+  }
+  return out;
+}
+function parseKMLBoundary(text){
+  const doc=new DOMParser().parseFromString(text,'text/xml');
+  if(doc.querySelector('parsererror')) throw new Error('Cannot read KML (malformed XML)');
+  const placemarks=[...doc.getElementsByTagName('Placemark')];
+  let coordsEl=null;
+  for(const pm of placemarks){
+    const nm=(pm.getElementsByTagName('name')[0]?.textContent||'').toLowerCase();
+    const poly=pm.getElementsByTagName('Polygon')[0];
+    if(nm.includes('bound')&&poly){coordsEl=poly.getElementsByTagName('coordinates')[0];break;}
+  }
+  if(!coordsEl){const poly=doc.getElementsByTagName('Polygon')[0]; if(poly)coordsEl=poly.getElementsByTagName('coordinates')[0];}
+  if(!coordsEl){const ls=doc.getElementsByTagName('LineString')[0]; if(ls)coordsEl=ls.getElementsByTagName('coordinates')[0];}
+  if(!coordsEl)coordsEl=doc.getElementsByTagName('coordinates')[0];
+  if(!coordsEl)throw new Error('No <coordinates> found in the KML');
+  const raw=coordsEl.textContent.trim().split(/\s+/);
+  const pts=[];
+  for(const tok of raw){ const c=tok.split(','); if(c.length<2)continue;
+    const lon=parseFloat(c[0]),lat=parseFloat(c[1]);
+    if(isFinite(lon)&&isFinite(lat))pts.push({lat,lon}); }
+  if(pts.length>1){const a=pts[0],b=pts[pts.length-1]; if(Math.abs(a.lat-b.lat)<1e-9&&Math.abs(a.lon-b.lon)<1e-9)pts.pop();}
+  if(pts.length<3)throw new Error('Boundary needs at least 3 points');
+  return pts;
+}
+async function extractKMLFromKMZ(buf){
+  const u8=new Uint8Array(buf), dv=new DataView(buf);
+  let eocd=-1;
+  for(let i=u8.length-22;i>=0;i--){ if(dv.getUint32(i,true)===0x06054b50){eocd=i;break;} }
+  if(eocd<0) throw new Error('Corrupt zip (no end-of-central-directory)');
+  const cdCount=dv.getUint16(eocd+10,true), cdOff=dv.getUint32(eocd+16,true);
+  const entries=[]; let p=cdOff;
+  for(let i=0;i<cdCount;i++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true), compSize=dv.getUint32(p+20,true);
+    const nLen=dv.getUint16(p+28,true), xLen=dv.getUint16(p+30,true), cLen=dv.getUint16(p+32,true);
+    const lho=dv.getUint32(p+42,true);
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nLen));
+    entries.push({name,method,compSize,lho}); p+=46+nLen+xLen+cLen;
+  }
+  const e=entries.find(x=>/(^|\/)doc\.kml$/i.test(x.name)) || entries.find(x=>/\.kml$/i.test(x.name));
+  if(!e) throw new Error('No .kml found inside the .kmz');
+  const lnLen=dv.getUint16(e.lho+26,true), lxLen=dv.getUint16(e.lho+28,true);
+  const start=e.lho+30+lnLen+lxLen, comp=u8.subarray(start,start+e.compSize);
+  const raw = e.method===0 ? comp : await _inflateRaw(comp);
+  return new TextDecoder().decode(raw);
+}
+function readSQLiteTables(bytes, want){
+  const view=new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength), dec=new TextDecoder();
+  let pageSize=view.getUint16(16,false); if(pageSize===1)pageSize=65536;
+  const varint=off=>{ let r=0n,i=0; for(;i<8;i++){const b=view.getUint8(off+i); r=(r<<7n)|BigInt(b&0x7f); if(!(b&0x80))return[Number(r),i+1];}
+    return [Number((r<<8n)|BigInt(view.getUint8(off+8))),9]; };
+  const sint=(off,n)=>{ let v=0; for(let i=0;i<n;i++)v=v*256+view.getUint8(off+i); const m=Math.pow(2,n*8); if(v>=m/2)v-=m; return v; };
+  const readVal=(st,off)=>{ if(st===0)return[null,0]; if(st===8)return[0,0]; if(st===9)return[1,0];
+    if(st<7){const n=st===5?6:st===6?8:st; return[sint(off,n),n];} if(st===7)return[view.getFloat64(off,false),8];
+    const isText=st&1, len=Math.floor((st-(isText?13:12))/2), sl=bytes.subarray(off,off+len); return[isText?dec.decode(sl):sl,len]; };
+  const parseRec=off=>{ const [hLen,n]=varint(off), hEnd=off+hLen; let p=off+n; const sts=[];
+    while(p<hEnd){const [st,m]=varint(p); sts.push(st); p+=m;} const vals=[]; for(const st of sts){const [v,sz]=readVal(st,p); vals.push(v); p+=sz;} return vals; };
+  const walk=(root,rows)=>{ const base=(root-1)*pageSize, hdr=root===1?base+100:base, type=view.getUint8(hdr), nC=view.getUint16(hdr+3,false), pb=hdr+((type===5||type===2)?12:8);
+    if(type===13){for(let i=0;i<nC;i++){const c=base+view.getUint16(pb+i*2,false); const [,n1]=varint(c); const [,n2]=varint(c+n1); rows.push(parseRec(c+n1+n2));}}
+    else if(type===5){for(let i=0;i<nC;i++){walk(view.getUint32(base+view.getUint16(pb+i*2,false),false),rows);} walk(view.getUint32(hdr+8,false),rows);} };
+  const master=[]; walk(1,master);
+  const colsOf=sql=>sql.slice(sql.indexOf('(')+1,sql.lastIndexOf(')')).split(',').map(d=>d.trim().split(/\s+/)[0].replace(/["'`\[\]]/g,''));
+  const out={};
+  for(const rec of master){ const [ttype,name,,rootpage,sql]=rec;
+    if(ttype==='table'&&want.includes(name)&&sql){ const cols=colsOf(sql), rows=[]; walk(rootpage,rows);
+      out[name]=rows.map(r=>{const o={}; cols.forEach((c,i)=>o[c]=r[i]); return o;}); } }
+  return out;
+}
+function parseSWMaps(swm2Bytes){
+  const db=readSQLiteTables(swm2Bytes,['feature_layers','features','points']);
+  const layers=db.feature_layers||[], feats=db.features||[], pts=db.points||[], byFid={};
+  for(const p of pts){ (byFid[p.fid]=byFid[p.fid]||[]).push(p); }
+  const out=[];
+  for(const f of feats){ const layer=layers.find(l=>l.uuid===f.layer_id);
+    if(((layer&&layer.geom_type)||'').toUpperCase()!=='POLYGON') continue;
+    const vs=(byFid[f.uuid]||[]).slice().sort((a,b)=>a.seq-b.seq).map(p=>({lat:p.lat,lon:p.lon}));
+    if(vs.length>=3) out.push({label:((layer&&layer.name)||f.name||'polygon'), points:vs}); }
+  return out;
+}
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    findAng, findLength, pointToLine, LL2UTM, UTM2LL, projectedLL, windingNumber,
+    ensureCW, bboxOf, signedArea, xmlEsc, fnSafe, ringKML,
+    writeShapefile, parseSHP, parseDBFField,
+    _inflateRaw, makeZip, readZipEntries,
+    _coordStr, parseKMLPolygons, parseKMLBoundary, extractKMLFromKMZ,
+    readSQLiteTables, parseSWMaps
+  };
+}
+
+/* ============================================================================
+ * APP PURE LOGIC (autosteer) — boundary OPTIONAL, AB line OPTIONAL
+ * A/B are free points snapped to ANY loaded vertex (boundary or line)
+ * ==========================================================================*/
+function dropClose(pts){ if(pts.length>1){const a=pts[0],b=pts[pts.length-1];
+  if(Math.abs(a.lat-b.lat)<1e-9&&Math.abs(a.lon-b.lon)<1e-9)return pts.slice(0,-1);} return pts; }
+function polyAreaM2(poly){ if(!poly||poly.length<3)return 0; const u=poly.map(p=>LL2UTM(p.lat,p.lon));
+  let s=0; for(let i=0;i<u.length;i++){const j=(i+1)%u.length; s+=u[i].E*u[j].N-u[j].E*u[i].N;} return Math.abs(s/2); }
+function abBearingLength(A,B){ const ua=LL2UTM(A.lat,A.lon), ub=LL2UTM(B.lat,B.lon);
+  const dE=ub.E-ua.E, dN=ub.N-ua.N; let br=Math.atan2(dE,dN)*180/PI; if(br<0)br+=360;
+  return {bearing:br, length:Math.hypot(dE,dN)}; }
+/* parallel nudge: off (metres) > 0 = RIGHT of the A->B heading, < 0 = LEFT.
+   right-hand normal of direction (dE,dN) is (dN,-dE)  [travel north -> right = east] */
+function offsetABLine(A,B,off){
+  const ua=LL2UTM(A.lat,A.lon), ub=LL2UTM(B.lat,B.lon);
+  let dE=ub.E-ua.E, dN=ub.N-ua.N; const len=Math.hypot(dE,dN);
+  if(!len || !off) return [{lat:A.lat,lon:A.lon},{lat:B.lat,lon:B.lon}];
+  dE/=len; dN/=len;
+  const nE=dN, nN=-dE;
+  return [ UTM2LL(ua.E+nE*off, ua.N+nN*off, ua.Zone),
+           UTM2LL(ub.E+nE*off, ub.N+nN*off, ua.Zone) ];
+}
+/* cm <-> m (UI talks cm; geometry stays in metres) */
+function cmToM(cm){ return isFinite(cm)? Math.round(cm*10)/1000 : 0; }
+function mToCm(m){ return Math.round(m*1000)/10; }
+
+/* every vertex the user may snap A/B to: boundary + loaded line */
+function allVertsOf(poly, line){
+  const out=[];
+  if(poly) poly.forEach(function(p,i){ out.push({lat:p.lat,lon:p.lon,src:'poly',i:i}); });
+  if(line&&line.points) line.points.forEach(function(p,i){ out.push({lat:p.lat,lon:p.lon,src:'line',i:i}); });
+  return out;
+}
+function vertKey(v){ return v ? v.src+':'+v.i : null; }
+/* import-chooser candidates: a short tag + where to put its badge on the map */
+function candTag(kind,i){ return (kind==='poly'?'P':'L')+(i+1); }
+function linePointAtFrac(points,frac){                               // walk the polyline by length
+  if(!points||!points.length) return null;
+  if(points.length<2) return {lat:points[0].lat, lon:points[0].lon};
+  const k=Math.cos(points[0].lat*PI/180), seg=[]; let total=0;
+  for(let i=0;i<points.length-1;i++){
+    const dx=(points[i+1].lon-points[i].lon)*k, dy=points[i+1].lat-points[i].lat;
+    const d=Math.hypot(dx,dy); seg.push(d); total+=d;
+  }
+  if(!total) return {lat:points[0].lat, lon:points[0].lon};
+  const target=total*Math.min(Math.max(frac,0),1); let acc=0;
+  for(let i=0;i<seg.length;i++){
+    if(acc+seg[i]>=target || i===seg.length-1){
+      const tt=seg[i]?(target-acc)/seg[i]:0;
+      return { lat: points[i].lat+(points[i+1].lat-points[i].lat)*tt,
+               lon: points[i].lon+(points[i+1].lon-points[i].lon)*tt };
+    }
+    acc+=seg[i];
+  }
+  return {lat:points[points.length-1].lat, lon:points[points.length-1].lon};
+}
+/* badge position: the honest one. Polygons -> centroid, lines -> true midpoint.
+   Two lines that lie on top of each other therefore get badges on top of each other
+   TOO — that is the point: it shows they are stacked. Selecting one raises it and
+   swaps the name in place. (Spreading them apart faked "two lines, two places".) */
+function labelPoint(points,isPoly){
+  if(!points||!points.length) return null;
+  if(isPoly){ let la=0,lo=0; points.forEach(function(p){la+=p.lat;lo+=p.lon;});
+    return {lat:la/points.length, lon:lo/points.length}; }
+  return linePointAtFrac(points,0.5);
+}
+/* Where A and B actually ARE. With an offset dialled in, the line you drive (and export)
+   is the nudged one, so its endpoints are the real A/B and the markers must ride it.
+   Either point may still be null (A picked, B not yet). */
+function abDisplayPts(A,B,off){
+  if(A&&B) return offsetABLine(A,B,off);
+  return [ A?{lat:A.lat,lon:A.lon}:null, B?{lat:B.lat,lon:B.lon}:null ];
+}
+/* the selected badge spells out the real feature name; the others stay short */
+function candLabel(tag,label,on){
+  if(!on) return tag;
+  let s=String(label||'').trim();
+  if(!s) return tag;
+  if(s.length>22) s=s.slice(0,20)+'…';
+  return tag+' · '+s;
+}
+function nearestVertexIdx(verts,lat,lon){          // verts = [{lat,lon},...] (any source)
+  if(!verts||!verts.length) return -1;
+  const k=Math.cos(lat*PI/180); let best=-1,bd=Infinity;
+  for(let i=0;i<verts.length;i++){
+    const dx=(verts[i].lon-lon)*k, dy=verts[i].lat-lat, d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=i;}
+  } return best;
+}
+function lineEndpoints(line){                      // A/B default = first & last vertex
+  if(!line||!line.points||line.points.length<2) return null;
+  const A=line.points[0], B=line.points[line.points.length-1];
+  if(Math.abs(A.lat-B.lat)<1e-9 && Math.abs(A.lon-B.lon)<1e-9) return null;   // closed loop
+  return [{lat:A.lat,lon:A.lon},{lat:B.lat,lon:B.lon}];
+}
+/* ---- PLANTING ROWS ----------------------------------------------------------
+   Lines parallel to the (nudged) AB line, spaced `spacing` metres apart, clipped
+   to the boundary. Geometry is done in UTM, then converted back to WGS84.
+   These are a DESIGN AID: they are drawn on the map but never written to a file. */
+function clipLineUTM(P0,D,R){                       // infinite line P0 + t*D  vs  ring R
+  const NE=D.N, NN=-D.E;                            // unit normal of the line
+  const sOf=p=>(p.E-P0.E)*NE+(p.N-P0.N)*NN;         // signed distance from the line
+  const tOf=p=>(p.E-P0.E)*D.E+(p.N-P0.N)*D.N;       // position ALONG the line
+  const EPS=1e-9, n=R.length, ts=[], spans=[];
+  for(let i=0;i<n;i++){
+    const a=R[i], b=R[(i+1)%n], sa=sOf(a), sb=sOf(b);
+    if(Math.abs(sa)<EPS && Math.abs(sb)<EPS){       // edge lies ON the line (A/B picked on an edge!)
+      spans.push([Math.min(tOf(a),tOf(b)), Math.max(tOf(a),tOf(b))]);
+      continue;                                     // ...that whole edge IS inside the field
+    }
+    if((sa<=0&&sb>0)||(sa>0&&sb<=0)){               // half-open rule: each vertex counted once
+      const u=sa/(sa-sb);
+      ts.push(tOf(a)+u*(tOf(b)-tOf(a)));
+    }
+  }
+  ts.sort((x,y)=>x-y);
+  const segs=[];
+  for(let i=0;i+1<ts.length;i+=2) if(ts[i+1]-ts[i]>1e-6) segs.push([ts[i],ts[i+1]]);
+  for(const sp of spans) if(sp[1]-sp[0]>1e-6) segs.push(sp);
+  segs.sort((x,y)=>x[0]-y[0]);
+  const merged=[];                                  // union overlapping pieces
+  for(const sg of segs){
+    const last=merged[merged.length-1];
+    if(last && sg[0]<=last[1]+1e-6) last[1]=Math.max(last[1],sg[1]);
+    else merged.push([sg[0],sg[1]]);
+  }
+  return merged.map(sg=>[{E:P0.E+D.E*sg[0], N:P0.N+D.N*sg[0]},
+                         {E:P0.E+D.E*sg[1], N:P0.N+D.N*sg[1]}]);
+}
+function plantingRows(poly, A, B, spacing, cap){
+  const out={rows:[], count:0, totalM:0, tooMany:false};
+  if(!poly || poly.length<3 || !A || !B || !(spacing>0)) return out;
+  const ua=LL2UTM(A.lat,A.lon), ub=LL2UTM(B.lat,B.lon), zone=ua.Zone;
+  let dE=ub.E-ua.E, dN=ub.N-ua.N; const len=Math.hypot(dE,dN);
+  if(!len) return out;
+  dE/=len; dN/=len;
+  const nE=dN, nN=-dE;                              // right-hand normal of A->B
+  const R=poly.map(p=>LL2UTM(p.lat,p.lon));
+  let sMin=Infinity, sMax=-Infinity;
+  for(const v of R){ const sv=(v.E-ua.E)*nE+(v.N-ua.N)*nN; if(sv<sMin)sMin=sv; if(sv>sMax)sMax=sv; }
+  const kMin=Math.ceil(sMin/spacing-1e-9), kMax=Math.floor(sMax/spacing+1e-9);
+  const lim=cap||2000;
+  if(kMax-kMin+1 > lim){ out.tooMany=true; return out; }
+  for(let k=kMin;k<=kMax;k++){
+    const off=k*spacing, P0={E:ua.E+nE*off, N:ua.N+nN*off};
+    const segs=clipLineUTM(P0,{E:dE,N:dN},R);
+    if(!segs.length) continue;
+    out.count++;                                    // one ROW, even if the field splits it
+    for(const sg of segs){
+      out.totalM += Math.hypot(sg[1].E-sg[0].E, sg[1].N-sg[0].N);
+      out.rows.push([UTM2LL(sg[0].E,sg[0].N,zone), UTM2LL(sg[1].E,sg[1].N,zone)]);
+    }
+  }
+  return out;
+}
+
+/* ---- feedback: no backend in a single file, so hand a ready-made mail to the OS ---- */
+function feedbackBody(msg, from, ctx){
+  return [ String(msg||'').trim(), '', '---',
+    'app    : AutoSteer Field Designer v'+(ctx&&ctx.ver||''),
+    'from   : '+((from||'').trim()||'-'),
+    'lang   : '+(ctx&&ctx.lang||'')+'  ·  theme: '+(ctx&&ctx.theme||''),
+    'loaded : '+(ctx&&ctx.loaded||'-'),
+    'device : '+(ctx&&ctx.ua||'') ].join('\n');
+}
+function feedbackMailto(msg, from, ctx, to){
+  let body=feedbackBody(msg,from,ctx);
+  if(body.length>1800) body=body.slice(0,1800)+'…';
+  return 'mailto:'+(to||'')+'?subject='+encodeURIComponent('[AutoSteer Field Designer v'+(ctx&&ctx.ver||'')+'] feedback')
+       + '&body='+encodeURIComponent(body);
+}
+function buildBoundaryRing(poly){
+  let ring=poly.map(p=>[p.lon,p.lat]);
+  if(ring.length){const a=ring[0],b=ring[ring.length-1]; if(a[0]!==b[0]||a[1]!==b[1])ring.push([a[0],a[1]]);}
+  return ensureCW(ring);
+}
+function exportNames(filename){ const base=fnSafe(filename)||'field';
+  return {base:base, boundName:base+'_bound', abName:base+'_AB'}; }
+
+/* --- Shapefile bundle. BOTH parts optional: boundary-only, AB-only, or both --- */
+function buildExportZip(poly, abA, abB, filename){
+  const n=exportNames(filename);
+  const hasB=!!(poly&&poly.length>=3), hasAB=!!(abA&&abB);
+  if(!hasB && !hasAB) return null;
+  const files=[];
+  if(hasB){
+    const bF=writeShapefile([{type:'polygon',parts:[buildBoundaryRing(poly)],attrs:{Name:n.boundName}}],[{name:'Name',length:50}]);
+    [['shp',bF.shp],['shx',bF.shx],['dbf',bF.dbf],['prj',bF.prj]].forEach(function(e){
+      files.push({name:n.boundName+'/'+n.boundName+'.'+e[0], data:e[1]}); });
+  }
+  if(hasAB){
+    const aF=writeShapefile([{type:'polyline',parts:[[[abA.lon,abA.lat],[abB.lon,abB.lat]]],attrs:{Name:n.abName}}],[{name:'Name',length:50}]);
+    [['shp',aF.shp],['shx',aF.shx],['dbf',aF.dbf],['prj',aF.prj]].forEach(function(e){
+      files.push({name:n.abName+'/'+n.abName+'.'+e[0], data:e[1]}); });
+  }
+  return {zip:makeZip(files), name:n.base+'.zip', boundName:n.boundName, abName:n.abName, hasBound:hasB, hasAB:hasAB};
+}
+
+/* --- KML / KMZ: one Folder per exported feature (folders omitted when unused) --- */
+function buildKML(poly, abA, abB, filename){
+  const n=exportNames(filename);
+  const hasB=!!(poly&&poly.length>=3), hasAB=!!(abA&&abB);
+  if(!hasB && !hasAB) return null;
+  const ICON='http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png';
+  let s='<?xml version="1.0" encoding="UTF-8"?>\n'+
+  '<kml xmlns="http://www.opengis.net/kml/2.2"><Document>\n'+
+  '<name>'+xmlEsc(n.base)+'</name>\n'+
+  /* KML colour is aabbggrr (reversed!) */
+  '<Style id="sBound"><LineStyle><color>ff008fff</color><width>2</width></LineStyle>'+
+  '<PolyStyle><color>1a008fff</color></PolyStyle></Style>\n'+
+  '<Style id="sAB"><LineStyle><color>ffe06f1e</color><width>3</width></LineStyle></Style>\n'+
+  '<Style id="sA"><IconStyle><color>ff5f9e2f</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n'+
+  '<Style id="sB"><IconStyle><color>ff4545e0</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n';
+  if(hasB){
+    const cB=buildBoundaryRing(poly).map(p=>p[0]+','+p[1]+',0').join(' ');
+    s+='<Folder><name>'+xmlEsc(n.boundName)+'</name><visibility>1</visibility>\n'+
+    '<Placemark><name>'+xmlEsc(n.boundName)+'</name><styleUrl>#sBound</styleUrl>'+
+    '<Polygon><altitudeMode>clampToGround</altitudeMode><outerBoundaryIs><LinearRing>'+
+    '<coordinates>'+cB+'</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n</Folder>\n';
+  }
+  if(hasAB){
+    const cAB=[abA,abB].map(p=>p.lon+','+p.lat+',0').join(' ');
+    s+='<Folder><name>'+xmlEsc(n.abName)+'</name><visibility>1</visibility>\n'+
+    '<Placemark><name>'+xmlEsc(n.abName)+'</name><styleUrl>#sAB</styleUrl>'+
+    '<LineString><tessellate>1</tessellate><altitudeMode>clampToGround</altitudeMode>'+
+    '<coordinates>'+cAB+'</coordinates></LineString></Placemark>\n'+
+    '<Placemark><name>A</name><styleUrl>#sA</styleUrl><Point><coordinates>'+abA.lon+','+abA.lat+',0</coordinates></Point></Placemark>\n'+
+    '<Placemark><name>B</name><styleUrl>#sB</styleUrl><Point><coordinates>'+abB.lon+','+abB.lat+',0</coordinates></Point></Placemark>\n'+
+    '</Folder>\n';
+  }
+  return s+'</Document></kml>';
+}
+function buildExportKMZ(poly, abA, abB, filename){
+  const n=exportNames(filename), kml=buildKML(poly,abA,abB,filename);
+  if(!kml) return null;
+  return {kmz:makeZip([{name:'doc.kml', data:new TextEncoder().encode(kml)}]), name:n.base+'.kmz', kml:kml};
+}
+
+/* --- IMPORT: polygons AND lines (never trust the extension: iOS UTI lesson) --- */
+function headStr(u8,n){ try{return new TextDecoder().decode(u8.subarray(0,n||64));}catch(e){return '';} }
+function isSQLite(u8){ return headStr(u8,20).indexOf('SQLite format 3')===0; }
+function baseNameOf(p){ const s=String(p||'').split('/').pop(); return s.replace(/\.[^.]+$/,'')||'feature'; }
+/* KML lines — toolkit has parseKMLPolygons only; this is the line-side twin (uses its _coordStr) */
+function parseKMLLines(text){
+  const doc=new DOMParser().parseFromString(text,'text/xml');
+  if(doc.querySelector('parsererror')) throw new Error('Cannot read KML (malformed XML)');
+  const out=[];
+  for(const pm of [...doc.getElementsByTagName('Placemark')]){
+    const nm=(pm.getElementsByTagName('name')[0]?.textContent||'').trim();
+    const lss=pm.getElementsByTagName('LineString');
+    for(let i=0;i<lss.length;i++){
+      const ce=lss[i].getElementsByTagName('coordinates')[0]; if(!ce) continue;
+      const pts=_coordStr(ce.textContent);
+      if(pts.length>=2) out.push({label:nm||('Line '+(out.length+1)), points:pts});
+    }
+  }
+  return out;
+}
+function dbfNames(bytes){
+  for(const fn of ['Name','name','NAME','layer','Layer','id','ID','FID']){
+    const v=parseDBFField(bytes,fn); if(v&&v.length&&v.some(x=>x)) return v;
+  } return null;
+}
+function shpFeatures(bytes, names, fallback){
+  const feats=parseSHP(bytes), polygons=[], lines=[];
+  feats.forEach(function(f,i){
+    const nm=(names&&names[i])||fallback||('Feature '+(i+1));
+    if(f.type==='polygon'){
+      const pts=dropClose(f.rings[0].map(p=>({lat:p.lat,lon:p.lon})));
+      if(pts.length>=3) polygons.push({label:nm, points:pts});
+    } else {
+      f.rings.forEach(function(r,k){
+        const pts=r.map(p=>({lat:p.lat,lon:p.lon}));
+        if(pts.length>=2) lines.push({label:nm+(f.rings.length>1?(' #'+(k+1)):''), points:pts});
+      });
+    }
+  });
+  return {polygons:polygons, lines:lines};
+}
+/* a zip may hold SEVERAL shapefiles (our own export = _bound/ + _AB/) — read them all */
+function shpEntriesToFeatures(entries){
+  const polygons=[], lines=[];
+  entries.filter(e=>/\.shp$/i.test(e.name)).forEach(function(s){
+    const base=s.name.replace(/\.shp$/i,'');
+    const dbf=entries.find(e=>e.name.toLowerCase()===(base+'.dbf').toLowerCase());
+    const r=shpFeatures(s.bytes, dbf?dbfNames(dbf.bytes):null, baseNameOf(base));
+    polygons.push.apply(polygons,r.polygons); lines.push.apply(lines,r.lines);
+  });
+  return {polygons:polygons, lines:lines};
+}
+/* SW Maps: toolkit's parseSWMaps returns polygons only; this reads LINE layers too */
+function parseSWMapsAll(bytes){
+  const db=readSQLiteTables(bytes,['feature_layers','features','points']);
+  const layers=db.feature_layers||[], feats=db.features||[], pts=db.points||[], byFid={};
+  for(const p of pts){ (byFid[p.fid]=byFid[p.fid]||[]).push(p); }
+  /* one layer can hold SEVERAL features (e.g. layer "Ab" holding features "A" and "B").
+     Using only the layer name makes them identical in the chooser -> append the feature name. */
+  const perLayer={};
+  for(const f of feats){ perLayer[f.layer_id]=(perLayer[f.layer_id]||0)+1; }
+  const polygons=[], lines=[];
+  for(const f of feats){
+    const layer=layers.find(l=>l.uuid===f.layer_id);
+    const gt=((layer&&layer.geom_type)||'').toUpperCase();
+    const vs=(byFid[f.uuid]||[]).slice().sort((a,b)=>a.seq-b.seq).map(p=>({lat:p.lat,lon:p.lon}));
+    const lname=(layer&&layer.name)||'', fname=(f.name||'').trim();
+    const many=(perLayer[f.layer_id]||0)>1;
+    const label=(lname && fname && many) ? (lname+' · '+fname) : (lname||fname||'feature');
+    if(gt==='POLYGON'){ if(vs.length>=3) polygons.push({label:label, points:vs}); }
+    else if(gt==='LINE'||gt==='LINESTRING'||gt==='POLYLINE'){ if(vs.length>=2) lines.push({label:label, points:vs}); }
+  }
+  return {polygons:polygons, lines:lines};
+}
+async function parseAnyToFeatures(buf, name){
+  const u8=new Uint8Array(buf);
+  if(isSQLite(u8)) return parseSWMapsAll(u8);
+  const isZip=u8[0]===0x50&&u8[1]===0x4b&&u8[2]===0x03&&u8[3]===0x04;
+  if(isZip){
+    const entries=await readZipEntries(buf);
+    const kml=entries.find(e=>/\.kml$/i.test(e.name));
+    if(kml){ const txt=new TextDecoder().decode(kml.bytes);
+      return {polygons:parseKMLPolygons(txt), lines:parseKMLLines(txt)}; }
+    if(entries.some(e=>/\.shp$/i.test(e.name))) return shpEntriesToFeatures(entries);
+    const db=entries.find(e=>/\.(swm2|sqlite|db)$/i.test(e.name)||isSQLite(e.bytes));
+    if(db) return parseSWMapsAll(db.bytes);
+    throw new Error(t('err_nozip'));
+  }
+  const dv=new DataView(buf);
+  if(buf.byteLength>=4 && dv.getInt32(0,false)===9994) return shpFeatures(u8, null, baseNameOf(name));
+  const txt=new TextDecoder().decode(u8);
+  return {polygons:parseKMLPolygons(txt), lines:parseKMLLines(txt)};
+}
+
+/* node-test exports (pure) */
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Object.assign(module.exports||{}, {
+    dropClose, polyAreaM2, abBearingLength, offsetABLine, cmToM, mToCm,
+    allVertsOf, vertKey, candTag, candLabel, labelPoint, linePointAtFrac, abDisplayPts,
+    clipLineUTM, plantingRows, feedbackBody, feedbackMailto,
+    nearestVertexIdx, lineEndpoints, buildBoundaryRing, exportNames,
+    buildExportZip, buildKML, buildExportKMZ,
+    parseKMLLines, dbfNames, shpFeatures, shpEntriesToFeatures, parseSWMapsAll,
+    parseAnyToFeatures, i18nParity
+  });
+}
+
+/* ===== CUT-FOR-NODE-TESTS: everything below is browser-only UI ===== */
+var map=null, layers={}, baseOSM=null, baseSat=null;
+/* poly & line are BOTH optional. A/B are free points snapped to any loaded vertex. */
+var state={ poly:null, polyName:"", line:null, A:null, B:null, aKey:null, bKey:null, pickMode:null, abOff:0 };
+var pend={ polygons:[], lines:[], b:null, l:null };     // pending import choice
+var rowsInfo={ rows:[], count:0, totalM:0, tooMany:false };
+function rowSpacingM(){ var cm=parseFloat(el("rowsSp").value); if(!isFinite(cm)||cm<=0)cm=185; return cmToM(cm); }
+
+function cssvar(n){ try{ var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v||"#888"; }catch(e){ return "#888"; } }
+function el(id){ return document.getElementById(id); }
+function toast(msg){ var e=el("toast"); e.textContent=msg; e.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(function(){e.classList.remove("show");},2600); }
+function hasAB(){ return !!(state.A && state.B); }
+function verts(){ return allVertsOf(state.poly, state.line); }
+
+function buildMap(){
+  map=L.map("map",{zoomControl:true, attributionControl:true, maxZoom:22, tap:true});
+  baseOSM=L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,maxNativeZoom:19,attribution:"© OpenStreetMap"});
+  baseSat=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:22,maxNativeZoom:19,attribution:"Esri World Imagery"});
+  baseSat.addTo(map);
+  map.setView([15.87,100.99],6);
+  layers.cand=L.layerGroup().addTo(map);      // import-chooser preview
+  layers.rows=L.layerGroup().addTo(map);      // planting rows (design aid, drawn underneath)
+  layers.boundary=L.layerGroup().addTo(map);
+  layers.imp=L.layerGroup().addTo(map);
+  layers.ab=L.layerGroup().addTo(map);
+  layers.verts=L.layerGroup().addTo(map);
+  /* TOUCH: tap anywhere -> snap to the nearest vertex of ANY loaded feature */
+  map.on("click",function(e){
+    if(!state.pickMode) return;
+    var vs=verts(); if(!vs.length) return;
+    var i=nearestVertexIdx(vs, e.latlng.lat, e.latlng.lng);
+    if(i>=0) pickVertex(vs[i]);
+  });
+}
+function setBase(which){
+  if(!map)return;
+  var sat=(which==="sat");
+  if(sat){ if(map.hasLayer(baseOSM))map.removeLayer(baseOSM); if(!map.hasLayer(baseSat))baseSat.addTo(map); }
+  else   { if(map.hasLayer(baseSat))map.removeLayer(baseSat); if(!map.hasLayer(baseOSM))baseOSM.addTo(map); }
+  el("bpSat").classList.toggle("active",sat);
+  el("bpOsm").classList.toggle("active",!sat);
+}
+
+/* ---- rendering ---- */
+function redraw(){
+  if(!layers.boundary)return;
+  layers.boundary.clearLayers(); layers.imp.clearLayers(); layers.ab.clearLayers();
+  layers.verts.clearLayers(); layers.rows.clearLayers();
+  /* planting rows: computed from the NUDGED AB line, clipped to the boundary.
+     Drawn first => they sit under the boundary/AB. Never exported. */
+  var Pab=abPts();
+  rowsInfo = (state.poly && hasAB())
+    ? plantingRows(state.poly, Pab[0], Pab[1], rowSpacingM(), 2000)
+    : {rows:[],count:0,totalM:0,tooMany:false};
+  if(state.poly && hasAB() && el("rowsOn").checked){
+    rowsInfo.rows.forEach(function(sg){
+      L.polyline([[sg[0].lat,sg[0].lon],[sg[1].lat,sg[1].lon]],
+        {color:cssvar("--c-row"),weight:1,opacity:.55,interactive:false}).addTo(layers.rows);
+    });
+  }
+  /* boundary — non-interactive so every tap reaches the map (snap logic) */
+  if(state.poly){
+    L.polygon(state.poly.map(function(p){return [p.lat,p.lon];}),
+      {color:cssvar("--c-bound"),weight:2,fillColor:cssvar("--c-bound"),fillOpacity:0.07,interactive:false})
+      .addTo(layers.boundary);
+  }
+  /* the loaded line (AB source). Only the A->B segment is exported, not the whole track */
+  if(state.line){
+    L.polyline(state.line.points.map(function(p){return [p.lat,p.lon];}),
+      {color:cssvar("--c-imp"),weight:3,opacity:.85,dashArray:"6,5",interactive:false}).addTo(layers.imp);
+  }
+  /* AB. Each marker appears the moment its point is picked, and both RIDE the nudged line. */
+  var P=Pab;
+  if(hasAB()){
+    if(state.abOff){                                   // dashed ghost = where the line originally sat
+      L.polyline([[state.A.lat,state.A.lon],[state.B.lat,state.B.lon]],
+        {color:cssvar("--c-orig"),weight:2,dashArray:"5,6",interactive:false}).addTo(layers.ab);
+    }
+    L.polyline([[P[0].lat,P[0].lon],[P[1].lat,P[1].lon]],
+      {color:cssvar("--c-ab"),weight:3.5,interactive:false}).addTo(layers.ab);
+  }
+  if(P[0]) abMarker(P[0],"A","a");
+  if(P[1]) abMarker(P[1],"B","b");
+  /* every snappable vertex. The picked corner is hidden only while its marker sits exactly
+     on top of it; once the line is nudged away, the corner reappears as a normal vertex. */
+  var picking=state.pickMode!=null;
+  verts().forEach(function(v){
+    var k=vertKey(v);
+    if((k===state.aKey || k===state.bKey) && !state.abOff) return;
+    L.circleMarker([v.lat,v.lon],
+      {radius:picking?9:4,color:"#fff",weight:picking?2:1,
+       fillColor:picking?cssvar("--c-pick"):(v.src==="line"?cssvar("--c-imp"):cssvar("--c-vert")),
+       fillOpacity:picking?1:.85,interactive:false}).addTo(layers.verts);
+  });
+  updateInfo();
+}
+function abPts(){ return abDisplayPts(state.A, state.B, state.abOff); }
+function abMarker(pt,txt,cls){
+  var m=L.circleMarker([pt.lat,pt.lon],
+    {radius:9,color:"#fff",weight:2,fillColor:cssvar(cls==="a"?"--c-a":"--c-b"),
+     fillOpacity:1,interactive:false}).addTo(layers.ab);
+  m.bindTooltip(txt,{permanent:true,direction:"right",className:"abtip "+cls,offset:[10,0]});
+}
+function fitAll(){
+  var pts=[];
+  if(state.poly) state.poly.forEach(function(p){pts.push([p.lat,p.lon]);});
+  if(state.line) state.line.points.forEach(function(p){pts.push([p.lat,p.lon]);});
+  if(map && pts.length) map.fitBounds(pts,{padding:[30,30],maxZoom:19});
+}
+
+/* ---- readouts ---- */
+function fmtArea(m2){ var rai=m2/1600, ha=m2/10000;
+  return ha.toFixed(2)+" ha · "+rai.toFixed(2)+" "+t("unit_rai")+" · "+Math.round(m2).toLocaleString()+" m²"; }
+function updateInfo(){
+  var hasB=!!state.poly, hasL=!!state.line;
+  el("rowBound").classList.toggle("hidden",!hasB);
+  el("rowArea").classList.toggle("hidden",!hasB);
+  el("rowLine").classList.toggle("hidden",!hasL);
+  el("lgBound").classList.toggle("hidden",!hasB);
+  el("lgImp").classList.toggle("hidden",!hasL);
+  el("btnUseLine").classList.toggle("hidden",!hasL);
+  if(hasB){ el("kvBound").textContent=(state.polyName||"—")+" · "+state.poly.length+" "+t("pts");
+            el("kvArea").textContent=fmtArea(polyAreaM2(state.poly)); }
+  if(hasL){ el("kvLine").textContent=(state.line.label||"—")+" · "+state.line.points.length+" "+t("pts"); }
+  if(hasAB()){
+    var bl=abBearingLength(state.A,state.B);
+    el("abBearing").textContent=bl.bearing.toFixed(1);
+    el("abLen").textContent=bl.length.toFixed(1);
+    el("abReadout").classList.remove("hidden");
+  } else el("abReadout").classList.add("hidden");
+  /* planting rows (needs a boundary AND an AB line to make sense) */
+  var canRows=!!(state.poly && hasAB());
+  el("card-rows").classList.toggle("hidden", !canRows);
+  el("lgRows").classList.toggle("hidden", !(canRows && el("rowsOn").checked));
+  if(canRows){
+    if(rowsInfo.tooMany){
+      el("rowsN").textContent="–"; el("rowsL").textContent="–";
+      el("rowsWarn").classList.remove("hidden");
+    }else{
+      el("rowsN").textContent=rowsInfo.count;
+      el("rowsL").textContent=Math.round(rowsInfo.totalM).toLocaleString();
+      el("rowsWarn").classList.add("hidden");
+    }
+  }
+  var cm=mToCm(state.abOff), side=cm>0?t("side_right"):t("side_left"), a=Math.abs(cm);
+  el("offNow").textContent = !cm ? t("off_none")
+    : (a>=100 ? t("off_now_m", a, (a/100).toFixed(2), side) : t("off_now", a, side));
+  if(document.activeElement!==el("offVal")) el("offVal").value=String(cm);
+  updateAbHint(); updateExPreview();
+}
+function updateAbHint(){
+  var h=el("abHint"); if(!h)return;
+  if(state.pickMode==="A") h.textContent=t("ab_pickA");
+  else if(state.pickMode==="B") h.textContent=t("ab_pickB");
+  else if(!hasAB()) h.textContent=t("ab_none");
+  else h.textContent="";
+  el("btnA").classList.toggle("pickon",state.pickMode==="A");
+  el("btnB").classList.toggle("pickon",state.pickMode==="B");
+}
+/* export preview: dim what is NOT going out, highlight what is */
+function updateExPreview(){
+  var box=el("exNames"); if(!box)return;
+  var n=exportNames(el("fname").value), b=!!state.poly, ab=hasAB();
+  box.innerHTML='<code class="'+(b?"on":"off")+'">'+n.boundName+'/</code>'+
+                '<code class="'+(ab?"on":"off")+'">'+n.abName+'/</code>';
+  var msg = (b&&!ab)? t("ex_boundonly") : (!b&&ab)? t("ex_abonly") : "";
+  el("exNote").textContent=msg;
+  el("exNote").classList.toggle("hidden",!msg);
+}
+
+/* ---- import chooser: assign roles (either may be skipped) ----
+   every candidate is drawn on the map so you can SEE which one you are picking
+   (file labels are often duplicated, e.g. two lines both called "Ab")          */
+function candBadge(pt,txt,on,kind){
+  if(!pt) return;
+  var m=L.circleMarker([pt.lat,pt.lon],{radius:on?7:5,color:"#fff",weight:2,
+    fillColor:on?(kind==="poly"?cssvar("--c-bound"):cssvar("--c-imp")):cssvar("--c-vert"),
+    fillOpacity:1,interactive:false}).addTo(layers.cand);
+  m.bindTooltip(txt,{permanent:true,direction:"top",
+    className:"candtip"+(on?" on":"")+(kind==="line"?" ln":""),offset:[0,-4]});
+}
+function candPolyShape(c,on){
+  L.polygon(c.points.map(function(p){return [p.lat,p.lon];}),
+    {color:on?cssvar("--c-bound"):cssvar("--c-vert"), weight:on?3:1.5, opacity:on?1:.75,
+     fillColor:on?cssvar("--c-bound"):cssvar("--c-vert"), fillOpacity:on?.10:.03,
+     dashArray:on?null:"5,5", interactive:false}).addTo(layers.cand);
+}
+function candLineShape(c,on){
+  L.polyline(c.points.map(function(p){return [p.lat,p.lon];}),
+    {color:on?cssvar("--c-imp"):cssvar("--c-vert"), weight:on?6:2, opacity:on?1:.75,
+     dashArray:"6,5", interactive:false}).addTo(layers.cand);
+}
+/* paint order matters: whatever is SELECTED must end up on top (two candidates can
+   sit exactly on top of each other), and every badge stays above every shape. */
+function drawCandidates(){
+  if(!layers.cand) return;
+  layers.cand.clearLayers();
+  var topShapes=[], topBadges=[];
+  pend.polygons.forEach(function(c,i){
+    if(pend.b===i) topShapes.push(function(){ candPolyShape(c,true); });
+    else candPolyShape(c,false);
+  });
+  pend.lines.forEach(function(c,i){
+    if(pend.l===i) topShapes.push(function(){ candLineShape(c,true); });
+    else candLineShape(c,false);
+  });
+  topShapes.forEach(function(f){ f(); });                       // selected shape on top
+  pend.polygons.forEach(function(c,i){
+    var pt=labelPoint(c.points,true), on=(pend.b===i), tx=candLabel(candTag("poly",i),c.label,on);
+    if(on) topBadges.push(function(){ candBadge(pt,tx,true,"poly"); });
+    else candBadge(pt,tx,false,"poly");
+  });
+  pend.lines.forEach(function(c,i){
+    var pt=labelPoint(c.points,false), on=(pend.l===i), tx=candLabel(candTag("line",i),c.label,on);
+    if(on) topBadges.push(function(){ candBadge(pt,tx,true,"line"); });
+    else candBadge(pt,tx,false,"line");
+  });
+  topBadges.forEach(function(f){ f(); });                       // selected badge topmost + named
+}
+function fitCandidates(){
+  var pts=[];
+  pend.polygons.forEach(function(c){ c.points.forEach(function(p){ pts.push([p.lat,p.lon]); }); });
+  pend.lines.forEach(function(c){ c.points.forEach(function(p){ pts.push([p.lat,p.lon]); }); });
+  if(map && pts.length) map.fitBounds(pts,{padding:[30,30],maxZoom:19});
+}
+function renderChooser(){
+  var bl=el("chBoundList"), ll=el("chLineList"); if(!bl||!ll) return;
+  bl.innerHTML=""; ll.innerHTML="";
+  if(!pend.polygons.length){ var e1=document.createElement("p"); e1.className="hint"; e1.style.margin="0";
+    e1.textContent=t("choose_none"); bl.appendChild(e1); }
+  pend.polygons.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.className="btn ghost block"+(pend.b===i?" active":"");
+    b.textContent=candTag("poly",i)+"  ·  "+(c.label||("Polygon "+(i+1)))+"  ·  "+c.points.length+" "+t("pts");
+    b.onclick=function(){ pend.b=(pend.b===i)?null:i; renderChooser(); };
+    bl.appendChild(b);
+  });
+  if(!pend.lines.length){ var e2=document.createElement("p"); e2.className="hint"; e2.style.margin="0";
+    e2.textContent=t("choose_none"); ll.appendChild(e2); }
+  pend.lines.forEach(function(c,i){
+    var b=document.createElement("button");
+    b.className="btn ghost block"+(pend.l===i?" lineon":"");
+    b.textContent=candTag("line",i)+"  ·  "+(c.label||("Line "+(i+1)))+"  ·  "+c.points.length+" "+t("pts");
+    b.onclick=function(){ pend.l=(pend.l===i)?null:i; renderChooser(); };
+    ll.appendChild(b);
+  });
+  drawCandidates();
+}
+function applyChoice(){
+  if(pend.b===null && pend.l===null){ toast(t("choose_nosel")); return; }
+  loadFeatures(pend.b!==null?pend.polygons[pend.b]:null, pend.l!==null?pend.lines[pend.l]:null);
+  el("card-chooser").classList.add("hidden");
+}
+function resetLoaded(){
+  state.poly=null; state.polyName=""; state.line=null;
+  state.A=null; state.B=null; state.aKey=null; state.bKey=null;
+  state.pickMode=null; state.abOff=0; el("offVal").value="0";
+  ["card-loaded","card-ab","card-export"].forEach(function(id){ el(id).classList.add("hidden"); });
+  redraw();
+}
+function loadFeatures(pc, lc){
+  if(layers.cand) layers.cand.clearLayers();     // preview off, real layers on
+  state.poly = pc ? dropClose(pc.points.map(function(p){return {lat:p.lat,lon:p.lon};})) : null;
+  state.polyName = pc ? (pc.label||"") : "";
+  state.line = lc ? {label:(lc.label||""), points:lc.points.map(function(p){return {lat:p.lat,lon:p.lon};})} : null;
+  state.A=null; state.B=null; state.aKey=null; state.bKey=null; state.pickMode=null; state.abOff=0;
+  el("offVal").value="0";
+  if(state.line) useLineEnds();                 // AB defaults to the loaded line's endpoints
+  var any=!!(state.poly||state.line);
+  ["card-loaded","card-ab","card-export"].forEach(function(id){ el(id).classList.toggle("hidden",!any); });
+  redraw(); fitAll();
+}
+
+/* ---- interactions ---- */
+function clearAB(){ state.A=null; state.B=null; state.aKey=null; state.bKey=null;
+  state.pickMode=null; state.abOff=0; el("offVal").value="0"; redraw(); }
+function pickVertex(v){
+  if(state.pickMode==="A"){ state.A={lat:v.lat,lon:v.lon}; state.aKey=vertKey(v); state.pickMode=(state.B==null)?"B":null; }
+  else if(state.pickMode==="B"){ state.B={lat:v.lat,lon:v.lon}; state.bKey=vertKey(v); state.pickMode=null; }
+  else return;
+  redraw();
+}
+function startPick(which){ state.pickMode=(state.pickMode===which)?null:which; redraw(); }
+function useLineEnds(){
+  var e=lineEndpoints(state.line); if(!e) return;
+  state.A=e[0]; state.B=e[1];
+  state.aKey="line:0"; state.bKey="line:"+(state.line.points.length-1);
+  state.pickMode=null;
+}
+function setAbOffCm(cm){ state.abOff=cmToM(cm); redraw(); }
+function nudgeAb(dir){ var s=parseFloat(el("offStep").value); if(!isFinite(s)||s<=0)s=10;
+  setAbOffCm(mToCm(state.abOff)+dir*s); }
+
+function looksLikeImage(file){
+  return /^image\//i.test(file.type||"") || /\.(jpe?g|png|heic|heif|gif|webp|bmp|tiff?)$/i.test(file.name||"");
+}
+async function importFile(file){
+  try{
+    if(looksLikeImage(file)){ toast(t("err_isimage")); return; }   // browser handed us a photo
+    var buf=await file.arrayBuffer();
+    var f=await parseAnyToFeatures(buf,file.name);
+    var polys=f.polygons||[], lines=f.lines||[];
+    if(!polys.length && !lines.length){ toast(t("err_nofeat")); return; }
+    el("fname").value=fnSafe((file.name||"field").replace(/\.[^.]+$/,""))||"field";
+    pend={polygons:polys, lines:lines, b:null, l:null};
+    if(polys.length+lines.length===1){                     // only one thing in the file: just load it
+      el("card-chooser").classList.add("hidden");
+      loadFeatures(polys[0]||null, lines[0]||null);
+    }else{                                                 // more than one: let the user assign roles
+      resetLoaded();
+      pend.b = (polys.length===1)?0:null;                  // pre-pick the unambiguous ones
+      pend.l = (lines.length===1)?0:null;
+      renderChooser();                                     // also draws every candidate on the map
+      el("card-chooser").classList.remove("hidden");
+      fitCandidates();                                     // ...and zooms to where they actually are
+    }
+  }catch(e){ toast(t("err_read",(e&&e.message)||String(e))); }
+}
+
+/* ---- export (only what is actually loaded/used) ---- */
+async function download(filename,bytes,mime){
+  var blob=new Blob([bytes],{type:mime||"application/zip"});
+  var touch=!!(window.matchMedia && window.matchMedia("(pointer:coarse)").matches);
+  if(touch && navigator.share && navigator.canShare){
+    try{ var f=new File([blob],filename,{type:mime||"application/zip"});
+      if(navigator.canShare({files:[f]})){ await navigator.share({files:[f],title:filename}); return; }
+    }catch(err){ if(err && err.name==="AbortError") return; }
+  }
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a"); a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+}
+function abForExport(){ return hasAB() ? abPts() : null; }   // exactly the points the markers show
+function canExport(){ if(!state.poly && !hasAB()){ toast(t("need_any")); return false; } return true; }
+function exportSHP(){ if(!canExport())return; var e=abForExport();
+  var out=buildExportZip(state.poly, e&&e[0], e&&e[1], el("fname").value);
+  if(out) download(out.name,out.zip,"application/zip"); }
+function exportKMZ(){ if(!canExport())return; var e=abForExport();
+  var out=buildExportKMZ(state.poly, e&&e[0], e&&e[1], el("fname").value);
+  if(out) download(out.name,out.kmz,"application/vnd.google-earth.kmz"); }
+
+/* ---- chrome ---- */
+function openChangelog(){
+  var rows=CHANGELOG.map(function(c){
+    var items=(LANG==="th"?c.th:c.en).map(function(x){return "<li>"+xmlEsc(x)+"</li>";}).join("");
+    return "<h2>v"+c.v+" <small>"+c.d+"</small></h2><ul>"+items+"</ul>";
+  }).join("");
+  var html='<!doctype html><html><head><meta charset="utf-8"><title>'+xmlEsc(t("changelog"))+'</title>'+
+    '<style>body{font-family:system-ui,"Noto Sans Thai",sans-serif;max-width:680px;margin:26px auto;padding:0 18px;color:#1b2620;background:#fff;line-height:1.5}'+
+    'h1{font-size:19px}h2{font-size:14px;margin:22px 0 6px;border-bottom:1px solid #ddd;padding-bottom:5px}'+
+    'small{color:#8a978d;font-weight:400}ul{margin:6px 0 0;padding-left:20px}li{margin:4px 0;font-size:13.5px}</style></head><body>'+
+    '<h1>'+xmlEsc(t("changelog"))+' — '+xmlEsc(t("app_title"))+' v'+APP_VER+'</h1>'+rows+'</body></html>';
+  var w=window.open("","_blank");
+  if(w && w.document){ w.document.open(); w.document.write(html); w.document.close(); }
+  else { var b=new Blob([html],{type:"text/html"}); window.open(URL.createObjectURL(b),"_blank"); }
+}
+/* ---- feedback (single file => no backend; hand a ready-made mail to the OS) ---- */
+function openMailto(url){ window.location.href=url; }
+function copyText(txt){
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(txt);
+  }catch(e){}
+  var ta=document.createElement("textarea"); ta.value=txt;
+  ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); }catch(e){}
+  ta.remove(); return Promise.resolve();
+}
+function fbContext(){
+  var loaded=[];
+  if(state.poly) loaded.push("bound:"+(state.polyName||"?")+"("+state.poly.length+")");
+  if(state.line) loaded.push("line:"+(state.line.label||"?")+"("+state.line.points.length+")");
+  if(hasAB()) loaded.push("AB set, off="+mToCm(state.abOff)+"cm");
+  return { ver:APP_VER, lang:LANG,
+    theme:document.documentElement.getAttribute("data-theme")||"light",
+    loaded: loaded.join(" · ")||"-",
+    ua:(navigator.userAgent||"").slice(0,120) };
+}
+function fbOpen(){ el("fbWrap").classList.remove("hidden"); el("fbMsg").focus(); }
+function fbCloseModal(){ el("fbWrap").classList.add("hidden"); }
+function fbSubmit(){
+  var msg=el("fbMsg").value.trim();
+  if(!msg){ toast(t("fb_need")); return; }
+  var url=feedbackMailto(msg, el("fbEmail").value, fbContext(), DEV_EMAIL);
+  try{ openMailto(url); fbCloseModal(); }
+  catch(e){ toast(t("fb_nomail")); }
+}
+function fbCopyAll(){
+  var msg=el("fbMsg").value.trim();
+  if(!msg){ toast(t("fb_need")); return; }
+  var body="To: "+DEV_EMAIL+"\n"+feedbackBody(msg, el("fbEmail").value, fbContext());
+  copyText(body); toast(t("fb_copied"));
+}
+function syncThemeBtn(){ var dark=document.documentElement.getAttribute("data-theme")==="dark";
+  el("themeBtn").textContent=dark?"☀":"☾"; el("themeBtn").title=dark?t("theme_toLight"):t("theme_toDark"); }
+function toggleTheme(){ var h=document.documentElement, dark=h.getAttribute("data-theme")==="dark";
+  h.setAttribute("data-theme",dark?"light":"dark"); syncThemeBtn(); redraw(); }
+
+function bindUI(){
+  el("verBadge").textContent="v"+APP_VER;
+  el("langBtn").onclick=function(){ setLang(LANG==="th"?"en":"th"); };
+  el("themeBtn").onclick=toggleTheme;
+  el("btnChangelog").onclick=openChangelog;
+
+  var fi=el("file"), drop=el("drop");
+  /* accept= is a minefield:
+     - iOS filters by UTI, so a narrow accept greys out .kmz/.swmz  -> ship NO accept there
+     - Android WebViews get an EMPTY accept list and fall back to images-only
+       (the picker then offers Camera / Photos only) -> give them an explicit "*​/*" */
+  if(/Android/i.test(navigator.userAgent||"")) fi.setAttribute("accept","*/*");
+  drop.onclick=function(){ fi.click(); };
+  fi.onchange=function(){ if(fi.files&&fi.files[0]) importFile(fi.files[0]); fi.value=""; };
+  ["dragenter","dragover"].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.add("over");}); });
+  ["dragleave","drop"].forEach(function(ev){ drop.addEventListener(ev,function(e){e.preventDefault();drop.classList.remove("over");}); });
+  drop.addEventListener("drop",function(e){ var f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0]; if(f) importFile(f); });
+
+  el("btnLoad").onclick=applyChoice;
+
+  el("bpSat").onclick=function(){ setBase("sat"); };
+  el("bpOsm").onclick=function(){ setBase("osm"); };
+
+  el("btnA").onclick=function(){ startPick("A"); };
+  el("btnB").onclick=function(){ startPick("B"); };
+  el("btnClearAB").onclick=clearAB;
+  el("btnUseLine").onclick=function(){ useLineEnds(); redraw(); };
+
+  el("offL").onclick=function(){ nudgeAb(-1); };
+  el("offR").onclick=function(){ nudgeAb(+1); };
+  el("offVal").addEventListener("input",function(){ setAbOffCm(parseFloat(el("offVal").value)); });
+  el("offReset").onclick=function(){ el("offVal").value="0"; setAbOffCm(0); };
+
+  el("rowsOn").addEventListener("change",redraw);
+  el("rowsSp").addEventListener("input",redraw);
+
+  el("fname").addEventListener("input",updateExPreview);
+  el("btnShp").onclick=exportSHP;
+  el("btnKmz").onclick=exportKMZ;
+
+  el("devMail").setAttribute("href","mailto:"+DEV_EMAIL);
+  el("btnFb").onclick=fbOpen;
+  el("fbClose").onclick=fbCloseModal;
+  el("fbSend").onclick=fbSubmit;
+  el("fbCopy").onclick=fbCopyAll;
+  el("fbWrap").addEventListener("click",function(e){ if(e.target===el("fbWrap")) fbCloseModal(); });
+
+  syncThemeBtn(); updateExPreview();
+}
+function checkFrame(){
+  var framed=false; try{ framed=(window.self!==window.top); }catch(e){ framed=true; }
+  if(framed){ el("frameBanner").style.display="block"; el("basePick").style.top="46px"; }
+}
+function initApp(){ bindUI(); buildMap(); applyLang(); checkFrame(); }
+
+/* ===== boot ===== */
+(function boot(){
+  function go(){ try{ initApp(); }catch(e){ var b=el("bootErr"); if(b)b.style.display="flex"; console.error(e); } }
+  if(typeof _loadLeaflet==="function"){ _loadLeaflet(go); } else { go(); }
+})();
+</script>
+</body>
+</html>
