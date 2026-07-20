@@ -1,6 +1,6 @@
 <img width="1530" height="756" alt="image" src="https://github.com/user-attachments/assets/57f6d5be-f6ea-439c-8be8-82fa48aea764" /># abLinePlan — AutoSteer Field Designer
 
-เครื่องมือออกแบบ AB line และขอบเขตแปลง สำหรับระบบ Auto-Steering ในการวางแผนแปลงปลูกพืช</br>
+เครื่องมือออกแบบ AB line และขอบเขตแปลง (boundary) สำหรับระบบ Auto-Steering ในการวางแผนแปลงปลูกพืช</br>
 A browser tool for planning autosteer AB lines and field boundaries.
 ---
 พัฒนาโดย:</br>
