@@ -798,6 +798,12 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
 .modalBox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;
   max-width:470px;width:100%;box-shadow:var(--shadow);max-height:88vh;overflow:auto}
 .modalBox h3{margin:0 0 12px;font-size:15px}
+.jdrow{display:flex;align-items:center;gap:8px;margin-top:6px}
+.jdrow .lb{flex:0 0 74px;font-size:11.5px;color:var(--muted);font-weight:700}
+.jdrow .vl{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:8px;
+  padding:9px 10px;font:600 13.5px/1.2 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  font-variant-numeric:tabular-nums;overflow-x:auto;white-space:nowrap}
+.jdrow .cp{flex:0 0 44px;min-height:40px;padding:0;font-size:15px}
 .credit{font-size:12.5px;line-height:1.5}
 .credit .nm{font-weight:700;font-size:13.5px}
 .credit .dp{color:var(--muted);margin-top:1px}
@@ -836,7 +842,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
     <span class="t2" data-i18n="app_sub">Boundary + AB Line</span>
   </div>
   <div class="spacer"></div>
-  <span class="badge" id="verBadge">v1.9</span>
+  <span class="badge" id="verBadge">v1.11</span>
   <button class="tbtn" id="langBtn" title="Language">EN</button>
   <button class="tbtn" id="themeBtn" title="Theme">☾</button>
 </div>
@@ -849,7 +855,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       <input type="file" id="file" hidden>
       <div class="drop" id="drop">
         <div class="big" data-i18n="import_drop">แตะเพื่อเลือกไฟล์ หรือวางไฟล์ที่นี่</div>
-        <div class="sm" data-i18n="import_hint">KML · KMZ · Shapefile (.shp / .zip) · SW Maps</div>
+        <div class="sm" data-i18n="import_hint">KML · KMZ · Shapefile (.shp / .zip) · SW Maps · GeoJSON</div>
       </div>
     </section>
 
@@ -916,6 +922,28 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       </div>
       <div class="sideNow" id="offNow"></div>
       <p class="hint" data-i18n="off_sign">+ = ขวาของทิศ A→B · − = ซ้าย</p>
+    </section>
+
+    <!-- JOHN DEERE (G5 / Gen 4) -->
+    <section class="card hidden" id="card-jd">
+      <h2 data-i18n="jd_h">John Deere (G5 / Gen 4)</h2>
+      <p class="hint" style="margin-top:0" data-i18n="jd_note">พิมพ์ค่าเหล่านี้เข้าจอ: Guidance → Create Track → Straight Track → วิธี Lat/Lon</p>
+      <div class="jdrow"><span class="lb" data-i18n="jd_aLat">A · lat</span><span class="vl" id="jdALat">–</span><button class="btn ghost cp" data-cp="jdALat">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_aLon">A · lon</span><span class="vl" id="jdALon">–</span><button class="btn ghost cp" data-cp="jdALon">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_bLat">B · lat</span><span class="vl" id="jdBLat">–</span><button class="btn ghost cp" data-cp="jdBLat">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_bLon">B · lon</span><span class="vl" id="jdBLon">–</span><button class="btn ghost cp" data-cp="jdBLon">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_head">heading</span><span class="vl" id="jdHead">–</span><button class="btn ghost cp" data-cp="jdHead">⧉</button></div>
+      <button class="btn ghost sm block" id="jdCopyAll" style="margin-top:9px" data-i18n="jd_copyall">คัดลอกทั้งหมด</button>
+      <p class="hint" data-i18n="jd_headnote">ทิศทาง: 0 = เหนือ · 90 = ตะวันออก · 180 = ใต้ · 270 = ตะวันตก</p>
+
+      <h2 style="margin-top:15px" data-i18n="jd_gj_h">ขอบเขตแปลงสำหรับจอ JD</h2>
+      <button class="btn block" id="btnGjson" data-i18n="jd_gjson">ส่งออก .gjson (รูปแบบของจอ)</button>
+      <p class="hint" data-i18n="jd_gj_note">วางไฟล์ในโฟลเดอร์ Gen4\SpatialFiles บน USB (FAT32) — รูปแบบเดียวกับที่จอ export ออกมาเอง · ยังไม่ยืนยันว่าจอรับกลับ ลองแล้วบอกผลด้วยครับ</p>
+
+      <h2 style="margin-top:15px" data-i18n="rx_h">Rx — ชั้นไว้ดูบนจอ</h2>
+      <button class="btn ghost block" id="btnRx" data-i18n="rx_export">ส่งออก Rx (.zip)</button>
+      <p class="hint" data-i18n="rx_note">เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB</p>
+      <p class="hint" style="color:var(--danger)" data-i18n="rx_warn">⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้</p>
     </section>
 
     <!-- PLANTING ROWS (design aid only; never exported) -->
@@ -1009,9 +1037,25 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
 <script>
 //MAIN-SCRIPT-BEGIN
 /* ===== APP META (APP_VER = single source) ===== */
-var APP_VER="1.9";
+var APP_VER="1.11";
 var DEV_EMAIL="vasu.ud@kmitl.ac.th";
 var CHANGELOG=[
+  {v:"1.11",d:"2026-07-20",
+   th:["เพิ่มการส่งออกแบบ Rx สำหรับจอ JD — เติมคอลัมน์ตัวเลข (DBF type N) ที่จอฟ้องว่าขาด ทำให้ import ผ่านและเห็นรูปแปลงบนจอในรถ",
+       "เส้น AB ส่งออกเป็นแถบบาง 0.5 ม. ได้ด้วย (prescription ต้องเป็นพื้นที่ ไม่ใช่เส้น) — ไว้ดูตำแหน่งบนจอเท่านั้น",
+       "หมายเหตุ: Rx = ชั้นข้อมูลไว้ดูอย่างเดียว ไม่ใช่ boundary และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้",
+       "การส่งออก Shapefile/KMZ แบบเดิมไม่ถูกแตะ (ยังใช้กับ Allynav/Hexagon ได้เหมือนเดิม)"],
+   en:["New Rx export for JD displays — adds the numeric column (DBF type N) the display said was missing, so the import succeeds and the field shape shows up in the cab",
+       "The AB line can go out as a 0.5 m corridor polygon (a prescription must be an area, not a line) — for on-screen reference only",
+       "Note: Rx is a look-at-it layer, not a boundary and not a guidance line; AutoTrac cannot follow it",
+       "The existing Shapefile/KMZ export is untouched (still works with Allynav/Hexagon)"]},
+  {v:"1.10",d:"2026-07-20",
+   th:["เพิ่มการ์ด John Deere: แสดง lat/lon ของ A และ B ที่ทศนิยม 8 ตำแหน่ง (≈1 มม.) และ heading 4 ตำแหน่ง ตรงกับช่องกรอกของจอ G5/Gen 4 พร้อมปุ่มคัดลอกทีละค่า",
+       "นำเข้าไฟล์ .gjson / .geojson ได้ — อ่านขอบเขตที่ export จากจอ JD (Gen4\\SpatialFiles) มาออกแบบต่อได้เลย",
+       "ส่งออกขอบเขตเป็น .gjson ตามรูปแบบที่จอ JD เขียนเอง (Polygon ปิดวง ทวนเข็ม CW, properties ครบ)"],
+   en:["New John Deere card: A/B lat-lon at 8 decimals (~1 mm) and heading at 4 decimals, matching the G5/Gen 4 entry fields, with per-value copy buttons",
+       "Import .gjson / .geojson — read boundaries exported from a JD display (Gen4\\SpatialFiles) and design against them",
+       "Export the boundary as .gjson in the display's own format (closed clockwise Polygon, full property set)"]},
   {v:"1.9",d:"2026-07-20",
    th:["ฝังไลบรารีแผนที่ (Leaflet 1.9.4) ลงในไฟล์เลย — ไม่ต้องโหลดจาก CDN อีกต่อไป เปิดใช้งานได้แม้เน็ตไม่ดี (ขาดแค่ภาพแผนที่พื้นหลัง ส่วนรูปแปลง/เส้น/แถวปลูก ยังวาดได้ครบ)",
        "เปลี่ยนชื่อไฟล์เป็น abLinePlan สำหรับขึ้นเว็บ",
@@ -1096,7 +1140,7 @@ var CHANGELOG=[
 var I18N={
  th:{
   app_title:"ออกแบบแปลง AutoSteer", app_sub:"Boundary + AB Line",
-  import_h:"นำเข้าไฟล์", import_drop:"แตะเพื่อเลือกไฟล์ หรือวางไฟล์ที่นี่", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps",
+  import_h:"นำเข้าไฟล์", import_drop:"แตะเพื่อเลือกไฟล์ หรือวางไฟล์ที่นี่", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps · GeoJSON",
   choose_h:"เลือกสิ่งที่จะโหลด", choose_bound:"ขอบเขตแปลง — polygon", choose_ab:"เส้น AB — line",
   choose_hint:"แตะเพื่อเลือก (จะไฮไลต์บนแผนที่) · แตะซ้ำ = ไม่ใช้ · เลือกอย่างใดอย่างหนึ่ง หรือทั้งคู่ก็ได้",
   choose_load:"โหลดที่เลือก", choose_none:"ไม่มีในไฟล์นี้", choose_nosel:"ยังไม่ได้เลือกอะไรเลย",
@@ -1107,6 +1151,18 @@ var I18N={
   rows_count:"จำนวนแถว", rows_len:"ความยาวรวม",
   rows_toomany:"ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ",
   rows_note:"เส้นแถวปลูกไว้ดูตอนออกแบบเท่านั้น — ไม่ถูกส่งออกไปในไฟล์",
+  jd_h:"John Deere (G5 / Gen 4)",
+  jd_note:"พิมพ์ค่าเหล่านี้เข้าจอ: Guidance → Create Track → Straight Track → วิธี Lat/Lon",
+  jd_aLat:"A · lat", jd_aLon:"A · lon", jd_bLat:"B · lat", jd_bLon:"B · lon", jd_head:"heading",
+  jd_copyall:"คัดลอกทั้งหมด", jd_copied:"คัดลอกแล้ว: {0}",
+  jd_headnote:"ทิศทาง: 0 = เหนือ · 90 = ตะวันออก · 180 = ใต้ · 270 = ตะวันตก",
+  jd_gj_h:"ขอบเขตแปลงสำหรับจอ JD", jd_gjson:"ส่งออก .gjson (รูปแบบของจอ)",
+  jd_gj_note:"วางไฟล์ในโฟลเดอร์ Gen4\\SpatialFiles บน USB (FAT32) — รูปแบบเดียวกับที่จอ export ออกมาเอง · ยังไม่ยืนยันว่าจอรับกลับ ลองแล้วบอกผลด้วยครับ",
+  jd_need_bound:"ต้องมีขอบเขตแปลงก่อนจึงจะส่งออก .gjson ได้",
+  rx_h:"Rx — ชั้นไว้ดูบนจอ", rx_export:"ส่งออก Rx (.zip)",
+  rx_note:"เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB",
+  rx_warn:"⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้",
+  rx_need:"ต้องมีขอบเขตหรือเส้น AB อย่างน้อยหนึ่งอย่าง",
   about_h:"ผู้พัฒนา",
   dev_name:"วสุ อุดมเพทายกุล",
   dev_dept:"ภาควิชาวิศวกรรมระบบชีวภาพและเกษตร คณะวิศวกรรมศาสตร์ สจล.",
@@ -1142,7 +1198,7 @@ var I18N={
  },
  en:{
   app_title:"AutoSteer Field Designer", app_sub:"Boundary + AB Line",
-  import_h:"Import file", import_drop:"Tap to choose a file, or drop one here", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps",
+  import_h:"Import file", import_drop:"Tap to choose a file, or drop one here", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps · GeoJSON",
   choose_h:"Choose what to load", choose_bound:"Field boundary — polygon", choose_ab:"AB line — line",
   choose_hint:"Tap to select (it lights up on the map) · tap again = don't use · either one, or both",
   choose_load:"Load selected", choose_none:"none in this file", choose_nosel:"Nothing selected yet",
@@ -1153,6 +1209,18 @@ var I18N={
   rows_count:"Rows", rows_len:"Total length",
   rows_toomany:"Spacing too small (over 2000 rows) — try a larger spacing",
   rows_note:"Planting rows are a design aid only — they are never exported",
+  jd_h:"John Deere (G5 / Gen 4)",
+  jd_note:"Type these into the display: Guidance → Create Track → Straight Track → Lat/Lon method",
+  jd_aLat:"A · lat", jd_aLon:"A · lon", jd_bLat:"B · lat", jd_bLon:"B · lon", jd_head:"heading",
+  jd_copyall:"Copy all", jd_copied:"Copied: {0}",
+  jd_headnote:"Heading: 0 = North · 90 = East · 180 = South · 270 = West",
+  jd_gj_h:"Field boundary for the JD display", jd_gjson:"Export .gjson (display format)",
+  jd_gj_note:"Put the file in Gen4\\SpatialFiles on a FAT32 USB — same format the display exports itself · not yet confirmed that the display reads it back, please report what happens",
+  jd_need_bound:"Load a boundary first to export a .gjson",
+  rx_h:"Rx — on-screen reference layer", rx_export:"Export Rx (.zip)",
+  rx_note:"Adds the numeric column the display said was missing → the import succeeds and the field shows up in the cab · the AB line goes out as a 0.5 m corridor · unzip into the Rx folder on the USB",
+  rx_warn:"⚠ Rx is for looking at only — it is not a boundary and not a guidance line; AutoTrac cannot follow it",
+  rx_need:"Load a boundary or an AB line first",
   about_h:"Developer",
   dev_name:"Vasu Udompetaikul",
   dev_dept:"Department of Biosystems and Agricultural Engineering, School of Engineering, KMITL",
@@ -1740,6 +1808,135 @@ function buildExportKMZ(poly, abA, abB, filename){
   return {kmz:makeZip([{name:'doc.kml', data:new TextEncoder().encode(kml)}]), name:n.base+'.kmz', kml:kml};
 }
 
+/* ---- GeoJSON (.gjson/.geojson) ------------------------------------------
+   John Deere Gen4/G5 displays export every boundary to
+      Gen4\SpatialFiles\Boundary{uuid}.gjson
+   as a plain GeoJSON FeatureCollection. Schema read off a real G5 Universal
+   export (2026-07-20): one Feature, id 1, Polygon, ring CLOSED and CLOCKWISE,
+   coordinates [lon,lat] at ~7 decimals (~1 cm), plus JD-specific properties.
+   signaltype 5123 is copied verbatim from the display's own file.          */
+function parseGeoJSON(text, fallbackName){
+  let d; try{ d=JSON.parse(text); }catch(e){ throw new Error('Cannot read GeoJSON (invalid JSON)'); }
+  const polygons=[], lines=[];
+  const feats = (d&&d.type==='FeatureCollection') ? (d.features||[])
+              : (d&&d.type==='Feature') ? [d]
+              : (d&&d.type) ? [{type:'Feature',geometry:d,properties:{}}] : [];
+  const pts = r => (r||[]).filter(c=>c&&c.length>=2&&isFinite(c[0])&&isFinite(c[1]))
+                          .map(c=>({lat:c[1], lon:c[0]}));      // GeoJSON is [lon,lat]; Z ignored
+  feats.forEach(function(f,i){
+    const g=f&&f.geometry; if(!g) return;
+    const pr=f.properties||{};
+    const nm=(pr.name||pr.Name||pr.NAME||fallbackName||('Feature '+(i+1)));
+    if(g.type==='Polygon'){
+      const p=dropClose(pts(g.coordinates&&g.coordinates[0]));
+      if(p.length>=3) polygons.push({label:nm, points:p});
+    } else if(g.type==='MultiPolygon'){
+      const n=(g.coordinates||[]).length;
+      (g.coordinates||[]).forEach(function(poly,k){
+        const p=dropClose(pts(poly&&poly[0]));
+        if(p.length>=3) polygons.push({label:nm+(n>1?(' #'+(k+1)):''), points:p}); });
+    } else if(g.type==='LineString'){
+      const p=pts(g.coordinates); if(p.length>=2) lines.push({label:nm, points:p});
+    } else if(g.type==='MultiLineString'){
+      const n=(g.coordinates||[]).length;
+      (g.coordinates||[]).forEach(function(ls,k){
+        const p=pts(ls); if(p.length>=2) lines.push({label:nm+(n>1?(' #'+(k+1)):''), points:p}); });
+    }
+  });
+  return {polygons:polygons, lines:lines};
+}
+function uuid4(){
+  try{ if(typeof crypto!=='undefined' && crypto.randomUUID) return crypto.randomUUID(); }catch(e){}
+  let out='';
+  for(let i=0;i<36;i++){
+    if(i===8||i===13||i===18||i===23){ out+='-'; continue; }
+    if(i===14){ out+='4'; continue; }
+    const r=Math.floor(Math.random()*16);
+    out += (i===19 ? ((r&0x3)|0x8) : r).toString(16);
+  }
+  return out;
+}
+const jdNum = v => Number(v.toFixed(8));                 // 8 dp ~ 1 mm (display writes 7 ~ 1 cm)
+function buildJDBoundary(poly, name){
+  if(!poly || poly.length<3) return null;
+  const ring = buildBoundaryRing(poly).map(p=>[jdNum(p[0]), jdNum(p[1])]);   // closed + CW, [lon,lat]
+  return { type:'FeatureCollection', features:[{
+    type:'Feature', id:1,
+    geometry:{ type:'Polygon', coordinates:[ring] },
+    properties:{ boundarytype:'Exterior', ispassable:false,
+                 name:String(name||'boundary').substring(0,32),
+                 offsetid:null, parent:null, signaltype:5123 } }] };
+}
+function jdBoundaryFileName(id){ return 'Boundary{'+(id||uuid4())+'}.gjson'; }
+
+/* ---- John Deere prescription (Rx) shapefile ------------------------------
+   The G5 rejected our plain export with "missing a valid numeric rate column":
+   a prescription needs a NUMERIC DBF field, and the toolkit's writeShapefile
+   only emits character (C) fields. The toolkit is a fixed dependency we never
+   edit, so we patch the finished DBF instead: flip that field's type byte to
+   'N', set its decimal count, and right-align the values (numeric DBF fields
+   are right-aligned by convention).
+   NOTE: an Rx layer is a VISUAL reference only - it is not a boundary and not
+   a guidance line.                                                          */
+function dbfToNumeric(dbf, fieldName, decimals){
+  const dv=new DataView(dbf.buffer, dbf.byteOffset, dbf.byteLength), dec=new TextDecoder();
+  const nRec=dv.getInt32(4,true), hSize=dv.getUint16(8,true), rSize=dv.getUint16(10,true);
+  let o=32, off=1, fOff=-1, fLen=0;
+  while(o<hSize && dbf[o]!==0x0d){
+    const nm=dec.decode(dbf.subarray(o,o+11)).replace(/\0[\s\S]*$/,''), len=dbf[o+16];
+    if(nm.toLowerCase()===String(fieldName).toLowerCase()){
+      dbf[o+11]=0x4E;                       // 'N' = numeric
+      dbf[o+17]=decimals&0xff;              // decimal count
+      fOff=off; fLen=len;
+    }
+    off+=len; o+=32;
+  }
+  if(fOff<0) return dbf;
+  const enc=new TextEncoder();
+  for(let i=0;i<nRec;i++){
+    const ro=hSize+i*rSize+fOff;
+    const raw=dec.decode(dbf.subarray(ro,ro+fLen)).trim();
+    const b=enc.encode(raw.length>fLen?raw.slice(0,fLen):raw);
+    const pad=fLen-b.length;
+    for(let k=0;k<fLen;k++) dbf[ro+k] = (k<pad) ? 0x20 : b[k-pad];   // right-aligned
+  }
+  return dbf;
+}
+/* an AB line has no area, so a prescription needs it as a thin corridor */
+function abCorridor(A,B,widthM){
+  if(!A||!B) return null;
+  const h=(widthM||0.5)/2;
+  const L=offsetABLine(A,B,-h), R=offsetABLine(A,B,h);
+  return [[L[0].lon,L[0].lat],[L[1].lon,L[1].lat],[R[1].lon,R[1].lat],[R[0].lon,R[0].lat],[L[0].lon,L[0].lat]];
+}
+function buildRxZip(poly, abA, abB, filename, rate, widthM){
+  const n=exportNames(filename), r=String(isFinite(rate)?rate:1);
+  const FIELDS=[{name:'Name',length:32},{name:'Rate',length:12}];
+  const files=[]; let layers=0;
+  const add=(nm,ring)=>{
+    const f=writeShapefile([{type:'polygon',parts:[ensureCW(ring)],attrs:{Name:nm,Rate:r}}],FIELDS);
+    dbfToNumeric(f.dbf,'Rate',2);
+    [['shp',f.shp],['shx',f.shx],['dbf',f.dbf],['prj',f.prj]].forEach(e=>
+      files.push({name:nm+'/'+nm+'.'+e[0], data:e[1]}));
+    layers++;
+  };
+  if(poly && poly.length>=3) add(n.base+'_bnd_Rx', buildBoundaryRing(poly));
+  if(abA && abB){ const c=abCorridor(abA,abB,widthM); if(c) add(n.base+'_AB_Rx', c); }
+  if(!layers) return null;
+  return {zip:makeZip(files), name:n.base+'_Rx.zip', layers:layers};
+}
+/* Values for the display's Straight Track / Lat-Lon entry fields.
+   Each point appears as soon as it is picked (same rule as the map markers);
+   heading needs both, so it stays null until B exists. */
+function jdTrackFields(A,B){
+  if(!A && !B) return null;
+  const out={ aLat:A?A.lat.toFixed(8):null, aLon:A?A.lon.toFixed(8):null,
+              bLat:B?B.lat.toFixed(8):null, bLon:B?B.lon.toFixed(8):null,
+              heading:null, lengthM:null };
+  if(A&&B){ const bl=abBearingLength(A,B); out.heading=bl.bearing.toFixed(4); out.lengthM=bl.length; }
+  return out;
+}
+
 /* --- IMPORT: polygons AND lines (never trust the extension: iOS UTI lesson) --- */
 function headStr(u8,n){ try{return new TextDecoder().decode(u8.subarray(0,n||64));}catch(e){return '';} }
 function isSQLite(u8){ return headStr(u8,20).indexOf('SQLite format 3')===0; }
@@ -1831,6 +2028,8 @@ async function parseAnyToFeatures(buf, name){
   const dv=new DataView(buf);
   if(buf.byteLength>=4 && dv.getInt32(0,false)===9994) return shpFeatures(u8, null, baseNameOf(name));
   const txt=new TextDecoder().decode(u8);
+  const head=txt.replace(/^\uFEFF/,'').trimStart()[0];
+  if(head==='{'||head==='[') return parseGeoJSON(txt, baseNameOf(name));   // .gjson / .geojson
   return {polygons:parseKMLPolygons(txt), lines:parseKMLLines(txt)};
 }
 
@@ -1840,6 +2039,8 @@ if (typeof module !== 'undefined' && module.exports) {
     dropClose, polyAreaM2, abBearingLength, offsetABLine, cmToM, mToCm,
     allVertsOf, vertKey, candTag, candLabel, labelPoint, linePointAtFrac, abDisplayPts,
     clipLineUTM, plantingRows, feedbackBody, feedbackMailto,
+    parseGeoJSON, uuid4, buildJDBoundary, jdBoundaryFileName, jdTrackFields,
+    dbfToNumeric, abCorridor, buildRxZip,
     nearestVertexIdx, lineEndpoints, buildBoundaryRing, exportNames,
     buildExportZip, buildKML, buildExportKMZ,
     parseKMLLines, dbfNames, shpFeatures, shpEntriesToFeatures, parseSWMapsAll,
@@ -1962,6 +2163,7 @@ function fitAll(){
 function fmtArea(m2){ var rai=m2/1600, ha=m2/10000;
   return ha.toFixed(2)+" ha · "+rai.toFixed(2)+" "+t("unit_rai")+" · "+Math.round(m2).toLocaleString()+" m²"; }
 function updateInfo(){
+  var Pab2=abPts();
   var hasB=!!state.poly, hasL=!!state.line;
   el("rowBound").classList.toggle("hidden",!hasB);
   el("rowArea").classList.toggle("hidden",!hasB);
@@ -1978,6 +2180,12 @@ function updateInfo(){
     el("abLen").textContent=bl.length.toFixed(1);
     el("abReadout").classList.remove("hidden");
   } else el("abReadout").classList.add("hidden");
+  /* John Deere card: the exact numbers to type into a G5 / Gen 4 display */
+  el("card-jd").classList.toggle("hidden", !(hasAB() || state.poly));
+  var jd=jdTrackFields(Pab2[0], Pab2[1]);
+  ["jdALat","jdALon","jdBLat","jdBLon","jdHead"].forEach(function(id,i){
+    var v = jd ? [jd.aLat,jd.aLon,jd.bLat,jd.bLon,jd.heading][i] : null;
+    el(id).textContent = v || "–"; });
   /* planting rows (needs a boundary AND an AB line to make sense) */
   var canRows=!!(state.poly && hasAB());
   el("card-rows").classList.toggle("hidden", !canRows);
@@ -2225,6 +2433,31 @@ function fbContext(){
     loaded: loaded.join(" · ")||"-",
     ua:(navigator.userAgent||"").slice(0,120) };
 }
+function jdCopyOne(id){
+  var v=el(id).textContent; if(!v||v==="–") return;
+  copyText(v); toast(t("jd_copied", v));
+}
+function jdCopyAll(){
+  var P=abPts(), jd=jdTrackFields(P[0],P[1]); if(!jd) return;
+  var L=[], w=[];
+  if(jd.aLat){ L.push("A  "+jd.aLat+", "+jd.aLon); w.push("A"); }
+  if(jd.bLat){ L.push("B  "+jd.bLat+", "+jd.bLon); w.push("B"); }
+  if(jd.heading){ L.push("heading  "+jd.heading); w.push("heading"); }
+  if(!L.length) return;
+  copyText(L.join("\n")); toast(t("jd_copied", w.join(" / ")));
+}
+function exportRx(){
+  var e=abForExport();
+  var out=buildRxZip(state.poly, e&&e[0], e&&e[1], el("fname").value, 1, 0.5);
+  if(!out){ toast(t("rx_need")); return; }
+  download(out.name, out.zip, "application/zip");
+}
+function exportGJSON(){
+  if(!state.poly){ toast(t("jd_need_bound")); return; }
+  var nm=exportNames(el("fname").value);
+  var fc=buildJDBoundary(state.poly, nm.boundName);
+  download(jdBoundaryFileName(), new TextEncoder().encode(JSON.stringify(fc)), "application/geo+json");
+}
 function fbOpen(){ el("fbWrap").classList.remove("hidden"); el("fbMsg").focus(); }
 function fbCloseModal(){ el("fbWrap").classList.add("hidden"); }
 function fbSubmit(){
@@ -2277,6 +2510,14 @@ function bindUI(){
   el("offR").onclick=function(){ nudgeAb(+1); };
   el("offVal").addEventListener("input",function(){ setAbOffCm(parseFloat(el("offVal").value)); });
   el("offReset").onclick=function(){ el("offVal").value="0"; setAbOffCm(0); };
+
+  var cps=document.querySelectorAll("[data-cp]");
+  for(var ci=0;ci<cps.length;ci++){
+    (function(b){ b.onclick=function(){ jdCopyOne(b.getAttribute("data-cp")); }; })(cps[ci]);
+  }
+  el("jdCopyAll").onclick=jdCopyAll;
+  el("btnGjson").onclick=exportGJSON;
+  el("btnRx").onclick=exportRx;
 
   el("rowsOn").addEventListener("change",redraw);
   el("rowsSp").addEventListener("input",redraw);
