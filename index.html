@@ -1090,9 +1090,18 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
 <script>
 //MAIN-SCRIPT-BEGIN
 /* ===== APP META (APP_VER = single source) ===== */
-var APP_VER="1.20";
+var APP_VER="1.21";
 var DEV_EMAIL="vasu.ud@kmitl.ac.th";
 var CHANGELOG=[
+  {v:"1.21",d:"2026-10-29",
+   th:["KML: จุด A และ B วาดเป็นวงกลมเล็กกว้าง 1 ม. แปะบนพื้นแบบเดียวกับขอบแปลง — ซูมเข้าใน Google Earth แล้วอยู่ตรงมุมแปลงเสมอ (ไอคอนหมุดของ Google Earth ลอยอยู่คนละระดับกับพื้น พอซูมใกล้จะเลื่อนเข้าหากลางจอราว 4 ม. หมุดของ Google เองก็เลื่อนเท่ากัน)",
+       "KML: ตัวอักษร A / B ยังแสดงอยู่ แต่เอาไอคอนวงกลมที่ลอยออกแล้ว",
+       "KML: เส้นแนวแถวเป็นสีขาว เหมือนในแอปตอนใช้ภาพถ่ายดาวเทียม แยกจากแถบพ่นสีฟ้าได้ชัด",
+       "นำเข้า KML ที่ส่งออกจากแอปนี้: วงกลม A/B ไม่ถูกนับเป็นแปลงให้เลือก"],
+   en:["KML: A and B are drawn as small 1 m discs painted on the ground like the boundary — in Google Earth they stay on the field corners at any zoom (Google Earth icons float at a different height from the ground and slide ~4 m toward the screen centre at close zoom; its own dropped pin slides the same)",
+       "KML: the A / B letters stay, the floating circle icons are gone",
+       "KML: row lines are white, as in the app over satellite imagery, so they stand apart from the cyan spray strips",
+       "Importing a KML exported by this app: the A/B discs are not offered as fields"]},
   {v:"1.20",d:"2026-10-29",
    th:["“บันทึกลงไดรฟ์…” ใส่ไฟล์ KML (ชื่อเดียวกับโฟลเดอร์) ไว้ในโฟลเดอร์ครอบด้วย — ลองกับจอได้ทั้ง Shapefile และ KML จากการบันทึกครั้งเดียว",
        "ปุ่มบอกชัดว่าได้อะไร: บรรทัดเล็กใต้ชื่อปุ่มเขียนว่า “Shapefile + KML”"],
@@ -2138,6 +2147,23 @@ function buildExportZip(poly, abA, abB, filename, spray, rows){
   return b;
 }
 
+/* --- A/B marks for KML (v1.21). Google Earth draws icon placemarks as billboards floating at
+       a height that need not match its 3D ground mesh; at close zoom, perspective slides them ~4 m
+       toward the screen centre (its own dropped pin slides the same), while clamped polygons and
+       lines stay on the imagery. So the position is a small disc draped exactly like the boundary. */
+const AB_MARK_R=0.5, AB_MARK_N=24;            // 1 m across, 24 sides
+function abMarkRing(p){
+  const r=[];
+  for(let i=0;i<AB_MARK_N;i++){ const g=projectedLL(p.lat,p.lon,AB_MARK_R,2*Math.PI*i/AB_MARK_N); r.push([g.lon,g.lat]); }
+  r.push(r[0].slice());
+  return ensureCW(r);
+}
+function abMarkKML(name, style, p){
+  return '<Placemark><name>'+name+'</name><styleUrl>'+style+'</styleUrl>'+
+    '<Polygon><tessellate>1</tessellate><altitudeMode>clampToGround</altitudeMode><outerBoundaryIs><LinearRing>'+
+    '<coordinates>'+abMarkRing(p).map(q=>q[0]+','+q[1]+',0').join(' ')+'</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n';
+}
+
 /* --- KML: one Folder per exported layer (folders omitted when unused).
        A single plain file — KMZ (a zip) was dropped in v1.17 so nothing needs unpacking --- */
 function buildKML(poly, abA, abB, filename, spray, rows){
@@ -2152,11 +2178,17 @@ function buildKML(poly, abA, abB, filename, spray, rows){
   '<Style id="sBound"><LineStyle><color>ff008fff</color><width>2</width></LineStyle>'+
   '<PolyStyle><color>1a008fff</color></PolyStyle></Style>\n'+
   '<Style id="sAB"><LineStyle><color>ffe06f1e</color><width>3</width></LineStyle></Style>\n'+
-  '<Style id="sA"><IconStyle><color>ff5f9e2f</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n'+
-  '<Style id="sB"><IconStyle><color>ff4545e0</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n'+
+  /* A/B: the letter only — the icon is invisible (alpha 00 AND scale 0, whichever the viewer honours) */
+  '<Style id="sA"><IconStyle><color>00ffffff</color><scale>0</scale><Icon><href>'+ICON+'</href></Icon></IconStyle>'+
+  '<LabelStyle><scale>1.2</scale></LabelStyle></Style>\n'+
+  '<Style id="sB"><IconStyle><color>00ffffff</color><scale>0</scale><Icon><href>'+ICON+'</href></Icon></IconStyle>'+
+  '<LabelStyle><scale>1.2</scale></LabelStyle></Style>\n'+
+  /* ...and the position itself is a disc draped on the ground, like the boundary */
+  '<Style id="sAm"><LineStyle><color>ffffffff</color><width>2</width></LineStyle><PolyStyle><color>ff5f9e2f</color></PolyStyle></Style>\n'+
+  '<Style id="sBm"><LineStyle><color>ffffffff</color><width>2</width></LineStyle><PolyStyle><color>ff4545e0</color></PolyStyle></Style>\n'+
   '<Style id="sSpray"><LineStyle><color>ffd4b800</color><width>2</width></LineStyle>'+
   '<PolyStyle><color>55d4b800</color></PolyStyle></Style>\n'+
-  '<Style id="sRows"><LineStyle><color>ffaebf57</color><width>1</width></LineStyle></Style>\n';
+  '<Style id="sRows"><LineStyle><color>e6ffffff</color><width>1</width></LineStyle></Style>\n';
   if(hasB){
     const cB=buildBoundaryRing(poly).map(p=>p[0]+','+p[1]+',0').join(' ');
     s+='<Folder><name>'+xmlEsc(n.boundName)+'</name><visibility>1</visibility>\n'+
@@ -2170,6 +2202,7 @@ function buildKML(poly, abA, abB, filename, spray, rows){
     '<Placemark><name>'+xmlEsc(n.abName)+'</name><styleUrl>#sAB</styleUrl>'+
     '<LineString><tessellate>1</tessellate><altitudeMode>clampToGround</altitudeMode>'+
     '<coordinates>'+cAB+'</coordinates></LineString></Placemark>\n'+
+    abMarkKML('A','#sAm',abA)+abMarkKML('B','#sBm',abB)+
     '<Placemark><name>A</name><styleUrl>#sA</styleUrl><Point><coordinates>'+abA.lon+','+abA.lat+',0</coordinates></Point></Placemark>\n'+
     '<Placemark><name>B</name><styleUrl>#sB</styleUrl><Point><coordinates>'+abB.lon+','+abB.lat+',0</coordinates></Point></Placemark>\n'+
     '</Folder>\n';
@@ -2396,6 +2429,8 @@ function parseSWMapsAll(bytes){
   }
   return {polygons:polygons, lines:lines};
 }
+/* a KML exported by v1.21+ carries the A/B discs (≈0.8 m²) — never offer them as fields */
+function dropABMarks(polys){ return polys.filter(p=>!(/^[AB]$/.test(p.label) && polyAreaM2(p.points)<2)); }
 async function parseAnyToFeatures(buf, name){
   const u8=new Uint8Array(buf);
   if(isSQLite(u8)) return parseSWMapsAll(u8);
@@ -2404,7 +2439,7 @@ async function parseAnyToFeatures(buf, name){
     const entries=await readZipEntries(buf);
     const kml=entries.find(e=>/\.kml$/i.test(e.name));
     if(kml){ const txt=new TextDecoder().decode(kml.bytes);
-      return {polygons:parseKMLPolygons(txt), lines:parseKMLLines(txt)}; }
+      return {polygons:dropABMarks(parseKMLPolygons(txt)), lines:parseKMLLines(txt)}; }
     if(entries.some(e=>/\.shp$/i.test(e.name))) return shpEntriesToFeatures(entries);
     const db=entries.find(e=>/\.(swm2|sqlite|db)$/i.test(e.name)||isSQLite(e.bytes));
     if(db) return parseSWMapsAll(db.bytes);
@@ -2415,7 +2450,7 @@ async function parseAnyToFeatures(buf, name){
   const txt=new TextDecoder().decode(u8);
   const head=txt.replace(/^\uFEFF/,'').trimStart()[0];
   if(head==='{'||head==='[') return parseGeoJSON(txt, baseNameOf(name));   // .gjson / .geojson
-  return {polygons:parseKMLPolygons(txt), lines:parseKMLLines(txt)};
+  return {polygons:dropABMarks(parseKMLPolygons(txt)), lines:parseKMLLines(txt)};
 }
 
 /* node-test exports (pure) */
@@ -2431,7 +2466,7 @@ if (typeof module !== 'undefined' && module.exports) {
     convexChain, chainVAt,
     nearestVertexIdx, lineEndpoints, buildBoundaryRing, exportNames,
     buildExportFiles, buildExportZip, buildKML, rowsOk, rowLabel,
-    parseKMLLines, dbfNames, shpFeatures, shpEntriesToFeatures, parseSWMapsAll,
+    parseKMLLines, dropABMarks, abMarkRing, AB_MARK_R, dbfNames, shpFeatures, shpEntriesToFeatures, parseSWMapsAll,
     parseAnyToFeatures, i18nParity
   });
 }
