@@ -677,7 +677,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   --shadow:0 1px 2px rgba(20,30,20,.06),0 8px 24px rgba(20,30,20,.06);
   /* data-layer colours: constant across themes */
   --c-bound:#ff8f00; --c-ab:#1e6fe0; --c-orig:#c9d3cd; --c-a:#2f9e5f; --c-b:#e04545;
-  --c-vert:#78909c; --c-pick:#ffc93c; --c-imp:#a855f7; --c-row:#57bfae;
+  --c-vert:#78909c; --c-pick:#ffc93c; --c-imp:#a855f7; --c-row:#57bfae; --c-spray:#00b8d4;
 }
 html[data-theme="dark"]{
   --bg:#0f1512; --panel:#161d18; --panel2:#1b241d; --ink:#e8ede8; --muted:#9fb0a4;
@@ -842,7 +842,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
     <span class="t2" data-i18n="app_sub">Boundary + AB Line</span>
   </div>
   <div class="spacer"></div>
-  <span class="badge" id="verBadge">v1.11</span>
+  <span class="badge" id="verBadge">v1.15</span>
   <button class="tbtn" id="langBtn" title="Language">EN</button>
   <button class="tbtn" id="themeBtn" title="Theme">☾</button>
 </div>
@@ -886,6 +886,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <span><i class="line" style="background:var(--c-ab)"></i><span data-i18n="lg_ab">เส้น AB</span></span>
         <span><i class="dash"></i><span data-i18n="lg_abOrig">AB เดิม</span></span>
         <span id="lgRows" class="hidden"><i class="line" style="background:var(--c-row)"></i><span data-i18n="lg_rows">แถวปลูก</span></span>
+        <span id="lgSpray" class="hidden"><i style="background:var(--c-spray)"></i><span data-i18n="lg_spray">แถบพ่น</span></span>
         <span><i style="background:var(--c-a)"></i>A</span>
         <span><i style="background:var(--c-b)"></i>B</span>
       </div>
@@ -958,6 +959,43 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       </div>
       <p class="hint hidden" id="rowsWarn" data-i18n="rows_toomany">ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ</p>
       <p class="hint" data-i18n="rows_note">เส้นแถวปลูกไว้ดูตอนออกแบบเท่านั้น — ไม่ถูกส่งออกไปในไฟล์</p>
+    </section>
+
+    <!-- SPRAY STRIPS — a separate output: one comb polygon -->
+    <section class="card hidden" id="card-spray">
+      <h2 data-i18n="spray_h">แถบพ่น (รูปหวี)</h2>
+      <label class="chk"><input type="checkbox" id="sprayOn"><span data-i18n="spray_on">แสดงแถบพ่นบนแผนที่</span></label>
+      <div class="row" style="margin-top:6px">
+        <div style="flex:1">
+          <label class="fld" data-i18n="spray_w">แถบพ่น (ม.)</label>
+          <input class="in mono" id="spW" type="number" value="4" min="0.1" step="0.1" inputmode="decimal">
+        </div>
+        <div style="flex:1">
+          <label class="fld" data-i18n="spray_k">แถบหยุด (ม.)</label>
+          <input class="in mono" id="spK" type="number" value="4" min="0.1" step="0.1" inputmode="decimal">
+        </div>
+      </div>
+      <p class="hint" id="spPitch" style="margin-top:4px"></p>
+      <label class="fld" style="margin-top:4px" data-i18n="spray_spine">สันเชื่อม (ม.) — ตัวที่ทำให้เป็นรูปเดียว</label>
+      <input class="in mono" id="spSpine" type="number" value="0.1" min="0.1" step="0.1" inputmode="decimal">
+      <p class="hint" id="spNeck"></p>
+      <label class="fld" style="margin-top:7px" data-i18n="spray_side">ด้านที่วางสันเชื่อม</label>
+      <div class="row">
+        <button class="btn ghost" id="spSideL" data-i18n="spray_left">← ซ้าย</button>
+        <button class="btn ghost" id="spSideR" data-i18n="spray_right">ขวา →</button>
+      </div>
+      <label class="chk" style="margin-top:7px"><input type="checkbox" id="spCross"><span data-i18n="spray_cross">หมุนแนวแถบ 90°</span></label>
+      <div class="instr">
+        <div class="cell"><div class="lab" data-i18n="spray_n">จำนวนแถบพ่น</div><div class="num mono"><span id="spN">–</span></div></div>
+        <div class="cell"><div class="lab" data-i18n="spray_area">พื้นที่พ่น</div><div class="num mono"><span id="spA">–</span></div></div>
+      </div>
+      <p class="hint" id="spDir"></p>
+      <p class="hint hidden" id="spWarn"></p>
+      <div class="row" style="margin-top:9px">
+        <button class="btn" id="btnSprayShp" data-i18n="spray_shp">Shapefile (.zip)</button>
+        <button class="btn" id="btnSprayKmz" data-i18n="spray_kmz">KMZ</button>
+      </div>
+      <p class="hint" data-i18n="spray_note">ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ไฟล์แยกจากขอบเขต+AB</p>
     </section>
 
     <!-- EXPORT -->
@@ -1037,9 +1075,41 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
 <script>
 //MAIN-SCRIPT-BEGIN
 /* ===== APP META (APP_VER = single source) ===== */
-var APP_VER="1.11";
+var APP_VER="1.15";
 var DEV_EMAIL="vasu.ud@kmitl.ac.th";
 var CHANGELOG=[
+  {v:"1.15",d:"2026-10-28",
+   th:["ยกเลิกแนวทางของ v1.14 ที่ย้ายแกนหวีออกไปนอกแปลง — กลับมาเป็นสันเชื่อมอยู่ในแปลง กว้าง 10 ซม. แบบ v1.13",
+       "เหตุผล: รูปที่ไม่ล้ำออกนอกขอบแปลงอธิบายง่ายกว่า และเครื่องมือนี้ใช้กับงานแลป/งานสาธิตเป็นหลัก",
+       "ตัวสันยังเดินตามขอบแปลงจริงตามที่แก้ไว้ใน v1.13 — 10 ซม. จึงไม่ขาดกลางทาง"],
+   en:["Backed out the v1.14 idea of putting the comb's stem outside the field — the spine is back inside, 10 cm wide, as in v1.13",
+       "Reason: a shape that stays within the boundary needs no explaining, and this tool is mainly for lab and demo work",
+       "The spine still follows the field edge as fixed in v1.13, so 10 cm holds all the way along"]},
+  {v:"1.14",d:"2026-10-28",
+   th:["(ยกเลิกใน v1.15) ทดลองย้ายแกนหวีออกไปนอกแปลง 30 ซม. เพื่อไม่ให้มีแถบพาดขวางกลางแปลง"],
+   en:["(reverted in v1.15) Tried putting the comb's stem 30 cm outside the field so nothing crossed the middle of the work"]},
+  {v:"1.13",d:"2026-10-28",
+   th:["แก้บั๊ก: สันเชื่อมเคยวัดจากจุดสูงสุดจุดเดียวของแปลง พอขอบยาวสองด้านไม่ขนานกัน สันจะถูกกินจนขาด — สันบาง ๆ ทำให้รูปแยกเป็นหลายชิ้นเงียบ ๆ (ที่แปลง rimklong สัน 10 ซม. ขาด 3 ใน 4 ช่อง) ตอนนี้สันเดินตามขอบแปลงจริง กว้างเท่ากันตลอดแนว",
+       "สันเชื่อมเล็กได้ถึง 10 ซม. และตั้งเป็นค่าเริ่มต้น — สันคือส่วนที่โดนพ่นทิ้งโดยไม่ใช่ลายที่ออกแบบ ยิ่งบางยิ่งเสียน้อย",
+       "แสดงความกว้างสันจริงที่จุดแคบที่สุด — ถ้าจอปฏิเสธรูป จะรู้ได้ทันทีว่าต้องเพิ่มเท่าไร",
+       "ปรับค่าได้ละเอียดขึ้นทีละ 10 ซม. ทั้งแถบพ่น แถบหยุด และสันเชื่อม",
+       "แสดงระยะซ้ำของลาย (พ่น + หยุด) ไว้ให้เทียบกับความกว้างบูมหรือระยะแถวปลูก"],
+   en:["Bug fix: the spine used to be measured down from the field's single highest point, so on a field whose two long edges are not parallel it was eaten away and the comb silently split into separate pieces (at rimklong a 10 cm spine pinched off at 3 of 4 gaps). It now follows the field edge itself and holds its width all along",
+       "The spine can go down to 10 cm and now defaults to it — the spine is sprayed area that is not part of the pattern, so thinner wastes less",
+       "Reports the real spine width at its narrowest point, so a rejected shape is obvious before it reaches the display",
+       "All three widths now step in 10 cm increments for finer control",
+       "Shows the pattern pitch (spray + skip) so it can be matched to a boom width or row spacing"]},
+  {v:"1.12",d:"2026-10-28",
+   th:["เพิ่ม “แถบพ่น (รูปหวี)” เป็นผลลัพธ์อีกชุดหนึ่ง — ตัดแปลงเป็นแถบพ่น/แถบหยุดสลับกัน กำหนดความกว้างได้ทั้งสองแบบ",
+       "ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะทำงานตามรูปนี้ได้",
+       "เลือกด้านที่วางสันเชื่อม และหมุนแนวแถบ 90° ได้ · แสดงจำนวนแถบ พื้นที่พ่น และ % ของแปลง",
+       "ส่งออกแยกต่างหาก (Shapefile .zip / KMZ) ไม่ปนกับไฟล์ขอบเขต+AB เดิม",
+       "ถ้ายังไม่ได้กำหนดเส้น AB จะใช้ขอบที่ยาวที่สุดของแปลงเป็นแนวแถบให้อัตโนมัติ"],
+   en:["New “spray strips (comb)” output — cuts the field into alternating spray and skip bands, each width set independently",
+       "The result is a SINGLE polygon: the teeth are joined by a spine along one edge, so a sprayer that toggles on the boundary follows it correctly",
+       "Choose which edge carries the spine, and rotate the bands 90° · shows band count, sprayed area and % of field",
+       "Exported on its own (Shapefile .zip / KMZ), separate from the existing boundary + AB files",
+       "With no AB line set, the field's longest edge is used as the band direction"]},
   {v:"1.11",d:"2026-07-20",
    th:["เพิ่มการส่งออกแบบ Rx สำหรับจอ JD — เติมคอลัมน์ตัวเลข (DBF type N) ที่จอฟ้องว่าขาด ทำให้ import ผ่านและเห็นรูปแปลงบนจอในรถ",
        "เส้น AB ส่งออกเป็นแถบบาง 0.5 ม. ได้ด้วย (prescription ต้องเป็นพื้นที่ ไม่ใช่เส้น) — ไว้ดูตำแหน่งบนจอเท่านั้น",
@@ -1163,6 +1233,25 @@ var I18N={
   rx_note:"เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB",
   rx_warn:"⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้",
   rx_need:"ต้องมีขอบเขตหรือเส้น AB อย่างน้อยหนึ่งอย่าง",
+  lg_spray:"แถบพ่น",
+  spray_h:"แถบพ่น (รูปหวี)", spray_on:"แสดงแถบพ่นบนแผนที่",
+  spray_w:"แถบพ่น (ม.)", spray_k:"แถบหยุด (ม.)",
+  spray_spine:"สันเชื่อม (ม.) — ตัวที่ทำให้เป็นรูปเดียว",
+  spray_pitch:"ระยะซ้ำของลาย {0} ม. (พ่น {1} + หยุด {2})",
+  spray_neck:"จุดที่สันแคบที่สุดจริง ๆ: {0} ม. — ถ้าจอปฏิเสธรูป ให้เพิ่มค่านี้",
+  spray_side:"ด้านที่วางสันเชื่อม", spray_left:"← ซ้าย", spray_right:"ขวา →",
+  spray_cross:"หมุนแนวแถบ 90°",
+  spray_n:"จำนวนแถบพ่น", spray_area:"พื้นที่พ่น",
+  spray_shp:"Shapefile (.zip)", spray_kmz:"KMZ",
+  spray_note:"ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ไฟล์แยกจากขอบเขต+AB",
+  spray_dir_ab:"แนวแถบ: ตั้งฉากกับเส้น AB (ขับตามเส้น AB แล้วจะสลับ เปิด/ปิด)",
+  spray_dir_edge:"แนวแถบ: อิงขอบที่ยาวที่สุดของแปลง (ยังไม่ได้กำหนดเส้น AB)",
+  spray_need:"ยังสร้างแถบพ่นไม่ได้ — ตรวจค่าที่กรอกก่อน",
+  spray_e_concave:"แปลงนี้มีมุมเว้า — ยังสร้างแถบพ่นให้ไม่ได้ ต้องเป็นแปลงนูน (ไม่มีมุมเว้า)",
+  spray_e_spine:"สันเชื่อมกว้างเกินความกว้างแปลง — ลดค่าลง",
+  spray_e_many:"แถบย่อยเกิน 500 แถบ — เพิ่มความกว้างแถบ",
+  spray_e_width:"ความกว้างต้องมากกว่า 0 ทุกช่อง",
+  spray_e_empty:"ไม่มีแถบพ่นตกในแปลงเลย — ตรวจค่าที่กรอก",
   about_h:"ผู้พัฒนา",
   dev_name:"วสุ อุดมเพทายกุล",
   dev_dept:"ภาควิชาวิศวกรรมระบบชีวภาพและเกษตร คณะวิศวกรรมศาสตร์ สจล.",
@@ -1221,6 +1310,25 @@ var I18N={
   rx_note:"Adds the numeric column the display said was missing → the import succeeds and the field shows up in the cab · the AB line goes out as a 0.5 m corridor · unzip into the Rx folder on the USB",
   rx_warn:"⚠ Rx is for looking at only — it is not a boundary and not a guidance line; AutoTrac cannot follow it",
   rx_need:"Load a boundary or an AB line first",
+  lg_spray:"Spray strips",
+  spray_h:"Spray strips (comb)", spray_on:"Show spray strips on the map",
+  spray_w:"Spray band (m)", spray_k:"Skip band (m)",
+  spray_spine:"Spine (m) — what keeps it one polygon",
+  spray_pitch:"Pattern pitch {0} m (spray {1} + skip {2})",
+  spray_neck:"Narrowest point of the real spine: {0} m — widen it if the display rejects the shape",
+  spray_side:"Edge carrying the spine", spray_left:"← Left", spray_right:"Right →",
+  spray_cross:"Rotate bands 90°",
+  spray_n:"Spray bands", spray_area:"Sprayed area",
+  spray_shp:"Shapefile (.zip)", spray_kmz:"KMZ",
+  spray_note:"One polygon: the teeth are joined by a spine along one edge, so a sprayer that toggles on the boundary follows this shape · exported separately from boundary + AB",
+  spray_dir_ab:"Band direction: perpendicular to the AB line (drive the AB line and the booms toggle)",
+  spray_dir_edge:"Band direction: from the field's longest edge (no AB line set)",
+  spray_need:"Cannot build the strips yet — check the widths",
+  spray_e_concave:"This field has a concave corner — strips need a convex field for now",
+  spray_e_spine:"The spine is wider than the field — reduce it",
+  spray_e_many:"Over 500 bands — widen the bands",
+  spray_e_width:"Every width must be greater than 0",
+  spray_e_empty:"No spray band falls inside the field — check the widths",
   about_h:"Developer",
   dev_name:"Vasu Udompetaikul",
   dev_dept:"Department of Biosystems and Agricultural Engineering, School of Engineering, KMITL",
@@ -1741,6 +1849,221 @@ function feedbackMailto(msg, from, ctx, to){
   return 'mailto:'+(to||'')+'?subject='+encodeURIComponent('[AutoSteer Field Designer v'+(ctx&&ctx.ver||'')+'] feedback')
        + '&body='+encodeURIComponent(body);
 }
+/* ---- SPRAY STRIPS: one comb ("E") polygon ---------------------------------
+   A sprayer in boundary-follow mode switches its booms on inside the polygon
+   and off outside it. To exercise that — or to lay out skip-band spraying —
+   the field is cut into alternating spray / no-spray bands. The bands must
+   remain ONE polygon (a multipart boundary is not accepted), so every band is
+   joined by a thin spine along one edge: the teeth of a comb.
+
+   Geometry runs in a local frame aligned to the AB line (u = along, v = across),
+   then the comb is clipped to the field with Sutherland-Hodgman. SH needs a
+   CONVEX clip region, so a concave field is REPORTED, not silently faked. */
+function ringIsConvex(ring){                       // ring: [[u,v],...] open
+  const n=ring.length; if(n<3) return false;
+  let pos=false, neg=false;
+  for(let i=0;i<n;i++){
+    const a=ring[i], b=ring[(i+1)%n], c=ring[(i+2)%n];
+    const cr=(b[0]-a[0])*(c[1]-b[1])-(b[1]-a[1])*(c[0]-b[0]);
+    if(cr> 1e-9) pos=true;
+    if(cr< -1e-9) neg=true;
+    if(pos&&neg) return false;
+  }
+  return true;
+}
+function ringCCW(ring){                            // force counter-clockwise
+  let s=0; const n=ring.length;
+  for(let i=0;i<n;i++){ const a=ring[i], b=ring[(i+1)%n]; s+=a[0]*b[1]-b[0]*a[1]; }
+  return s<0 ? ring.slice().reverse() : ring.slice();
+}
+function clipConvexSH(subject, clip){              // subject may be concave; clip convex+CCW
+  let out=subject.slice();
+  for(let i=0;i<clip.length && out.length;i++){
+    const A=clip[i], B=clip[(i+1)%clip.length], inp=out; out=[];
+    const side=p=>(B[0]-A[0])*(p[1]-A[1])-(B[1]-A[1])*(p[0]-A[0]);
+    for(let j=0;j<inp.length;j++){
+      const P=inp[j], Q=inp[(j+1)%inp.length], sp=side(P), sq=side(Q);
+      if(sp>=0) out.push(P);
+      if((sp>0&&sq<0)||(sp<0&&sq>0)){
+        const tt=sp/(sp-sq);
+        out.push([P[0]+(Q[0]-P[0])*tt, P[1]+(Q[1]-P[1])*tt]);
+      }
+    }
+  }
+  return out;
+}
+function cleanRing(ring, tol){                     // drop repeats + collinear SH leftovers
+  const t=tol||1e-6, a=[];
+  for(const q of ring){
+    const z=a[a.length-1];
+    if(!z || Math.hypot(q[0]-z[0],q[1]-z[1])>t) a.push(q);
+  }
+  while(a.length>1 && Math.hypot(a[0][0]-a[a.length-1][0], a[0][1]-a[a.length-1][1])<=t) a.pop();
+  const out=[];
+  for(let i=0;i<a.length;i++){
+    const z=a[(i-1+a.length)%a.length], c=a[i], w=a[(i+1)%a.length];
+    const cr=(c[0]-z[0])*(w[1]-z[1])-(c[1]-z[1])*(w[0]-z[0]);
+    if(Math.abs(cr)>t) out.push(c);
+  }
+  return out.length>=3 ? out : [];
+}
+function ringAreaUV(r){ let s=0; for(let i=0;i<r.length;i++){const a=r[i],b=r[(i+1)%r.length]; s+=a[0]*b[1]-b[0]*a[1];} return Math.abs(s/2); }
+/* The upper (or lower) chain of a CONVEX ring, as a piecewise-linear v(u).
+   The spine must hug the FIELD EDGE, not a single highest point: on a field
+   whose two long edges are not parallel, measuring the spine down from vMax
+   eats the whole connector at the far end and the comb pinches into separate
+   pieces. Offsetting the chain itself keeps the connector SP wide all along. */
+function convexChain(F, upper){
+  /* Walk the ring between its extreme-u vertices instead of testing each edge's
+     direction: a side that is vertical in u carries micron-level noise from the
+     lat/lon round trip, so sign tests put it on the wrong chain and corrupt it. */
+  const n=F.length; if(n<3) return [];
+  const TOL=1e-6;
+  const better=(a,b)=>upper ? a[1]>b[1] : a[1]<b[1];
+  let iMax=0, iMin=0;
+  for(let i=1;i<n;i++){
+    const a=F[i], b=F[iMax];
+    if(a[0]>b[0]+TOL || (Math.abs(a[0]-b[0])<=TOL && better(a,b))) iMax=i;
+  }
+  for(let i=1;i<n;i++){
+    const a=F[i], b=F[iMin];
+    if(a[0]<b[0]-TOL || (Math.abs(a[0]-b[0])<=TOL && better(a,b))) iMin=i;
+  }
+  const out=[];                                      // CCW: upper runs iMax->iMin, lower iMin->iMax
+  let i = upper ? iMax : iMin; const stop = upper ? iMin : iMax;
+  out.push(F[i]);
+  for(let guard=0; i!==stop && guard<=n; guard++){ i=(i+1)%n; out.push(F[i]); }
+  if(upper) out.reverse();                           // ascending u, uMin .. uMax
+  return out;
+}
+function chainVAt(chain, u){
+  const n=chain.length; if(!n) return null;
+  if(u<=chain[0][0]) return chain[0][1];
+  if(u>=chain[n-1][0]) return chain[n-1][1];
+  for(let i=0;i<n-1;i++){
+    const a=chain[i], b=chain[i+1];
+    if(u>=a[0] && u<=b[0]){ const tt=(b[0]-a[0])?(u-a[0])/(b[0]-a[0]):0; return a[1]+(b[1]-a[1])*tt; }
+  }
+  return chain[n-1][1];
+}
+function longestEdge(poly){                        // fallback band direction when no AB line
+  if(!poly || poly.length<2) return null;
+  let best=-1, bi=0;
+  for(let i=0;i<poly.length;i++){
+    const a=LL2UTM(poly[i].lat,poly[i].lon), j=(i+1)%poly.length,
+          b=LL2UTM(poly[j].lat,poly[j].lon), d=Math.hypot(b.E-a.E,b.N-a.N);
+    if(d>best){ best=d; bi=i; }
+  }
+  return [poly[bi], poly[(bi+1)%poly.length]];
+}
+/* opt = {sprayW, skipW, spineW, side:'left'|'right', cross:bool, cap} — metres */
+function sprayStrips(poly, A, B, opt){
+  const o=opt||{}, S=+o.sprayW, K=+o.skipW, SP=+o.spineW;
+  const bad=r=>({ring:[], teeth:0, areaM2:0, fieldM2:0, pct:0, ok:false, reason:r});
+  if(!poly || poly.length<3) return bad('no_boundary');
+  if(!A || !B) return bad('no_ab');
+  if(!(S>0) || !(K>0) || !(SP>0)) return bad('bad_width');
+
+  const ua=LL2UTM(A.lat,A.lon), ub=LL2UTM(B.lat,B.lon), zone=ua.Zone;
+  let dE=ub.E-ua.E, dN=ub.N-ua.N; const LEN=Math.hypot(dE,dN);
+  if(!LEN) return bad('no_ab');
+  dE/=LEN; dN/=LEN;
+  if(o.cross){ const sw=dE; dE=-dN; dN=sw; }       // rotate the whole pattern 90 deg
+  const nE=-dN, nN=dE;                             // left-hand normal of the band axis
+  const toUV=q=>[ (q.E-ua.E)*dE+(q.N-ua.N)*dN, (q.E-ua.E)*nE+(q.N-ua.N)*nN ];
+  const toLL=q=>UTM2LL(ua.E+q[0]*dE+q[1]*nE, ua.N+q[0]*dN+q[1]*nN, zone);
+
+  const F=ringCCW(poly.map(p=>toUV(LL2UTM(p.lat,p.lon))));
+  if(!ringIsConvex(F)) return bad('concave');
+  let uMin=Infinity,uMax=-Infinity,vMin=Infinity,vMax=-Infinity;
+  for(const q of F){ if(q[0]<uMin)uMin=q[0]; if(q[0]>uMax)uMax=q[0];
+                     if(q[1]<vMin)vMin=q[1]; if(q[1]>vMax)vMax=q[1]; }
+  if(SP >= (vMax-vMin)) return bad('spine_too_wide');
+  const span=uMax-uMin, nT=Math.floor(span/(S+K))+1, cap=o.cap||500;
+  if(nT>cap) return Object.assign(bad('too_many'),{teeth:nT});
+  const M=Math.max(10, 0.25*Math.max(span, vMax-vMin));
+
+  const left=(o.side!=='right');
+  const spineChain=convexChain(F, left), farChain=convexChain(F, !left);
+  if(spineChain.length<2) return bad('empty');
+  const sv=u=>chainVAt(spineChain,u) + (left ? -SP : SP);   // spine inner edge, SP inside the edge
+  const vOut = left ? vMax+M  : vMin-M;            // spine outer edge (outside the field)
+  const vFar = left ? vMin-M  : vMax+M;            // far tip of every tooth
+  const uL=uMin-M, uR=uMax+M;
+
+  const bands=[];
+  for(let k=0;k<nT;k++){ const a=uMin+k*(S+K); bands.push([a,a+S]); }
+
+  /* chain corners that fall in a gap become real vertices of the spine underside */
+  const breaks=spineChain.map(q=>q[0]).filter(x=>x>uL && x<uR);
+  const under=(fromU,toU,arr)=>{                   // walk the underside right-to-left
+    breaks.filter(x=>x<fromU-1e-9 && x>toU+1e-9).sort((a,b)=>b-a)
+          .forEach(x=>arr.push([x, sv(x)]));
+  };
+  const comb=[[uL,vOut],[uR,vOut],[uR,sv(uR)]];
+  let prev=uR;
+  for(let k=bands.length-1;k>=0;k--){
+    under(prev, bands[k][1], comb);
+    comb.push([bands[k][1],sv(bands[k][1])],[bands[k][1],vFar],
+              [bands[k][0],vFar],[bands[k][0],sv(bands[k][0])]);
+    prev=bands[k][0];
+  }
+  under(prev, uL, comb);
+  comb.push([uL,sv(uL)]);
+
+  const clipped=cleanRing(clipConvexSH(comb, F));
+  if(clipped.length<3) return bad('empty');
+
+  let teeth=0;                                     // bands that actually reach the field
+  for(const b of bands){
+    const piece=clipConvexSH(F, ringCCW([[b[0],vFar],[b[1],vFar],[b[1],vOut],[b[0],vOut]]));
+    if(piece.length>=3 && ringAreaUV(piece)>0.05) teeth++;
+  }
+  /* narrowest connector across the gaps — what actually holds the comb together */
+  let neck=Infinity;
+  for(let k=0;k+1<bands.length;k++){
+    const mid=(bands[k][1]+bands[k+1][0])/2;
+    if(mid<=uMin || mid>=uMax) continue;
+    const edge=chainVAt(spineChain,mid), far=chainVAt(farChain,mid), cut=sv(mid);
+    const w = left ? (edge - Math.max(far,cut)) : (Math.min(far,cut) - edge);
+    if(w<neck) neck=w;
+  }
+  if(!isFinite(neck)) neck=SP;
+  const areaM2=ringAreaUV(clipped), fieldM2=ringAreaUV(F);
+  return { ring: clipped.map(q=>{ const g=toLL(q); return {lat:g.lat, lon:g.lon}; }),
+           teeth:teeth, areaM2:areaM2, fieldM2:fieldM2, neckM:neck,
+           pct: fieldM2 ? 100*areaM2/fieldM2 : 0, ok:true, reason:'' };
+}
+/* ---- spray strips: its own export pair, never mixed with boundary + AB ---- */
+function sprayNames(filename){ const base=fnSafe(filename)||'field'; return {base:base, sprayName:base+'_spray'}; }
+function buildSprayZip(ring, filename){
+  if(!ring || ring.length<3) return null;
+  const n=sprayNames(filename);
+  const f=writeShapefile([{type:'polygon',parts:[buildBoundaryRing(ring)],attrs:{Name:n.sprayName}}],[{name:'Name',length:50}]);
+  const files=[];
+  [['shp',f.shp],['shx',f.shx],['dbf',f.dbf],['prj',f.prj]].forEach(function(e){
+    files.push({name:n.sprayName+'/'+n.sprayName+'.'+e[0], data:e[1]}); });
+  return {zip:makeZip(files), name:n.sprayName+'.zip', sprayName:n.sprayName};
+}
+function buildSprayKML(ring, filename){
+  if(!ring || ring.length<3) return null;
+  const n=sprayNames(filename);
+  const c=buildBoundaryRing(ring).map(q=>q[0]+','+q[1]+',0').join(' ');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document>\n'+
+    '<name>'+xmlEsc(n.sprayName)+'</name>\n'+
+    '<Style id="sSpray"><LineStyle><color>ffd4b800</color><width>2</width></LineStyle>'+
+    '<PolyStyle><color>55d4b800</color></PolyStyle></Style>\n'+
+    '<Placemark><name>'+xmlEsc(n.sprayName)+'</name><styleUrl>#sSpray</styleUrl>'+
+    '<Polygon><altitudeMode>clampToGround</altitudeMode><outerBoundaryIs><LinearRing>'+
+    '<coordinates>'+c+'</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n'+
+    '</Document></kml>\n';
+}
+function buildSprayKMZ(ring, filename){
+  const k=buildSprayKML(ring,filename); if(!k) return null;
+  const n=sprayNames(filename);
+  return {kmz:makeZip([{name:'doc.kml', data:new TextEncoder().encode(k)}]), name:n.sprayName+'.kmz', kml:k};
+}
+
 function buildBoundaryRing(poly){
   let ring=poly.map(p=>[p.lon,p.lat]);
   if(ring.length){const a=ring[0],b=ring[ring.length-1]; if(a[0]!==b[0]||a[1]!==b[1])ring.push([a[0],a[1]]);}
@@ -2041,6 +2364,9 @@ if (typeof module !== 'undefined' && module.exports) {
     clipLineUTM, plantingRows, feedbackBody, feedbackMailto,
     parseGeoJSON, uuid4, buildJDBoundary, jdBoundaryFileName, jdTrackFields,
     dbfToNumeric, abCorridor, buildRxZip,
+    ringIsConvex, ringCCW, clipConvexSH, cleanRing, ringAreaUV, longestEdge,
+    sprayStrips, sprayNames, buildSprayZip, buildSprayKML, buildSprayKMZ,
+    convexChain, chainVAt,
     nearestVertexIdx, lineEndpoints, buildBoundaryRing, exportNames,
     buildExportZip, buildKML, buildExportKMZ,
     parseKMLLines, dbfNames, shpFeatures, shpEntriesToFeatures, parseSWMapsAll,
@@ -2054,6 +2380,23 @@ var map=null, layers={}, baseOSM=null, baseSat=null;
 var state={ poly:null, polyName:"", line:null, A:null, B:null, aKey:null, bKey:null, pickMode:null, abOff:0 };
 var pend={ polygons:[], lines:[], b:null, l:null };     // pending import choice
 var rowsInfo={ rows:[], count:0, totalM:0, tooMany:false };
+var sprayInfo={ ring:[], teeth:0, areaM2:0, fieldM2:0, pct:0, ok:false, reason:'' };
+var spraySide='left';
+function sprayNum(id,d){ var v=parseFloat(el(id).value); return (isFinite(v)&&v>0)?v:d; }
+/* band direction: the AB line when one is set, otherwise the field's longest edge */
+function sprayDir(){
+  if(hasAB()){ var P=abPts(); return {A:P[0], B:P[1], src:'ab'}; }
+  if(state.poly && state.poly.length>=2){ var e=longestEdge(state.poly); if(e) return {A:e[0], B:e[1], src:'edge'}; }
+  return null;
+}
+function sprayOpts(){
+  return { sprayW:sprayNum("spW",4), skipW:sprayNum("spK",4), spineW:sprayNum("spSpine",0.1),
+           side:spraySide, cross:el("spCross").checked, cap:500 };
+}
+function syncSpraySide(){
+  el("spSideL").classList.toggle("active", spraySide==='left');
+  el("spSideR").classList.toggle("active", spraySide==='right');
+}
 function rowSpacingM(){ var cm=parseFloat(el("rowsSp").value); if(!isFinite(cm)||cm<=0)cm=185; return cmToM(cm); }
 
 function cssvar(n){ try{ var v=getComputedStyle(document.documentElement).getPropertyValue(n).trim(); return v||"#888"; }catch(e){ return "#888"; } }
@@ -2071,6 +2414,7 @@ function buildMap(){
   map.setView([15.87,100.99],6);
   layers.cand=L.layerGroup().addTo(map);      // import-chooser preview
   layers.rows=L.layerGroup().addTo(map);      // planting rows (design aid, drawn underneath)
+  layers.spray=L.layerGroup().addTo(map);     // spray strips (its own output)
   layers.boundary=L.layerGroup().addTo(map);
   layers.imp=L.layerGroup().addTo(map);
   layers.ab=L.layerGroup().addTo(map);
@@ -2096,7 +2440,7 @@ function setBase(which){
 function redraw(){
   if(!layers.boundary)return;
   layers.boundary.clearLayers(); layers.imp.clearLayers(); layers.ab.clearLayers();
-  layers.verts.clearLayers(); layers.rows.clearLayers();
+  layers.verts.clearLayers(); layers.rows.clearLayers(); layers.spray.clearLayers();
   /* planting rows: computed from the NUDGED AB line, clipped to the boundary.
      Drawn first => they sit under the boundary/AB. Never exported. */
   var Pab=abPts();
@@ -2108,6 +2452,17 @@ function redraw(){
       L.polyline([[sg[0].lat,sg[0].lon],[sg[1].lat,sg[1].lon]],
         {color:cssvar("--c-row"),weight:1,opacity:.55,interactive:false}).addTo(layers.rows);
     });
+  }
+  /* spray strips: one comb polygon clipped to the field. Computed whenever a
+     boundary exists so the readouts are honest before it is switched on. */
+  var sdir=sprayDir();
+  sprayInfo = (state.poly && sdir)
+    ? sprayStrips(state.poly, sdir.A, sdir.B, sprayOpts())
+    : { ring:[], teeth:0, areaM2:0, fieldM2:0, pct:0, ok:false, reason:'' };
+  if(sprayInfo.ok && el("sprayOn").checked){
+    L.polygon(sprayInfo.ring.map(function(q){return [q.lat,q.lon];}),
+      {color:cssvar("--c-spray"), weight:2, opacity:.95,
+       fillColor:cssvar("--c-spray"), fillOpacity:.28, interactive:false}).addTo(layers.spray);
   }
   /* boundary — non-interactive so every tap reaches the map (snap logic) */
   if(state.poly){
@@ -2198,6 +2553,29 @@ function updateInfo(){
       el("rowsN").textContent=rowsInfo.count;
       el("rowsL").textContent=Math.round(rowsInfo.totalM).toLocaleString();
       el("rowsWarn").classList.add("hidden");
+    }
+  }
+  /* spray strips (needs a boundary; direction falls back to the longest edge) */
+  var sdir2=sprayDir(), canSpray=!!(state.poly && sdir2);
+  el("card-spray").classList.toggle("hidden", !canSpray);
+  el("lgSpray").classList.toggle("hidden", !(canSpray && el("sprayOn").checked && sprayInfo.ok));
+  if(canSpray){
+    el("spDir").textContent = t(sdir2.src==='ab' ? "spray_dir_ab" : "spray_dir_edge");
+    var so=sprayOpts();
+    el("spPitch").textContent = t("spray_pitch", (so.sprayW+so.skipW).toFixed(1),
+                                  so.sprayW.toFixed(1), so.skipW.toFixed(1));
+    el("spNeck").textContent = sprayInfo.ok ? t("spray_neck", sprayInfo.neckM.toFixed(2)) : "";
+    if(sprayInfo.ok){
+      el("spN").textContent = sprayInfo.teeth;
+      el("spA").textContent = (sprayInfo.areaM2/1600).toFixed(2)+" "+t("unit_rai")
+                            + " · "+Math.round(sprayInfo.pct)+"%";
+      el("spWarn").classList.add("hidden");
+    }else{
+      el("spN").textContent="–"; el("spA").textContent="–";
+      var ek={concave:"spray_e_concave", spine_too_wide:"spray_e_spine", too_many:"spray_e_many",
+              bad_width:"spray_e_width", empty:"spray_e_empty"}[sprayInfo.reason];
+      if(ek){ el("spWarn").textContent=t(ek); el("spWarn").classList.remove("hidden"); }
+      else el("spWarn").classList.add("hidden");
     }
   }
   var cm=mToCm(state.abOff), side=cm>0?t("side_right"):t("side_left"), a=Math.abs(cm);
@@ -2446,6 +2824,18 @@ function jdCopyAll(){
   if(!L.length) return;
   copyText(L.join("\n")); toast(t("jd_copied", w.join(" / ")));
 }
+function exportSprayShp(){
+  if(!sprayInfo.ok){ toast(t("spray_need")); return; }
+  var out=buildSprayZip(sprayInfo.ring, el("fname").value);
+  if(!out){ toast(t("spray_need")); return; }
+  download(out.name, out.zip, "application/zip");
+}
+function exportSprayKmz(){
+  if(!sprayInfo.ok){ toast(t("spray_need")); return; }
+  var out=buildSprayKMZ(sprayInfo.ring, el("fname").value);
+  if(!out){ toast(t("spray_need")); return; }
+  download(out.name, out.kmz, "application/vnd.google-earth.kmz");
+}
 function exportRx(){
   var e=abForExport();
   var out=buildRxZip(state.poly, e&&e[0], e&&e[1], el("fname").value, 1, 0.5);
@@ -2518,6 +2908,14 @@ function bindUI(){
   el("jdCopyAll").onclick=jdCopyAll;
   el("btnGjson").onclick=exportGJSON;
   el("btnRx").onclick=exportRx;
+
+  ["sprayOn","spCross"].forEach(function(id){ el(id).addEventListener("change",redraw); });
+  ["spW","spK","spSpine"].forEach(function(id){ el(id).addEventListener("input",redraw); });
+  el("spSideL").onclick=function(){ spraySide='left';  syncSpraySide(); redraw(); };
+  el("spSideR").onclick=function(){ spraySide='right'; syncSpraySide(); redraw(); };
+  el("btnSprayShp").onclick=exportSprayShp;
+  el("btnSprayKmz").onclick=exportSprayKmz;
+  syncSpraySide();
 
   el("rowsOn").addEventListener("change",redraw);
   el("rowsSp").addEventListener("input",redraw);
