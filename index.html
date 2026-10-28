@@ -677,7 +677,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   --shadow:0 1px 2px rgba(20,30,20,.06),0 8px 24px rgba(20,30,20,.06);
   /* data-layer colours: constant across themes */
   --c-bound:#ff8f00; --c-ab:#1e6fe0; --c-orig:#c9d3cd; --c-a:#2f9e5f; --c-b:#e04545;
-  --c-vert:#78909c; --c-pick:#ffc93c; --c-imp:#a855f7; --c-row:#57bfae; --c-spray:#00b8d4;
+  --c-vert:#78909c; --c-pick:#ffc93c; --c-imp:#a855f7; --c-row:#00796b; --c-spray:#00b8d4;
 }
 html[data-theme="dark"]{
   --bg:#0f1512; --panel:#161d18; --panel2:#1b241d; --ink:#e8ede8; --muted:#9fb0a4;
@@ -731,6 +731,8 @@ html[data-theme="dark"] #map{background:#0b120d}
 .btn:hover{filter:brightness(1.05)}
 .btn:active{transform:translateY(1px)}
 .btn.ghost{background:var(--panel2);color:var(--ink);border-color:var(--line);font-weight:600}
+.btn:disabled{opacity:.42;cursor:not-allowed;filter:grayscale(1)}
+.hint.why{color:var(--danger)}
 .btn.ghost:hover{border-color:var(--accent)}
 .btn.ghost.active{border-color:var(--accent);background:var(--input-focus);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
 .btn.ghost.pickon{border-color:var(--c-bound);color:var(--c-bound);box-shadow:inset 0 0 0 1px var(--c-bound);background:var(--panel2)}
@@ -738,6 +740,12 @@ html[data-theme="dark"] #map{background:#0b120d}
 .btn.danger{background:transparent;color:var(--danger);border-color:var(--line)}
 .btn.danger:hover{border-color:var(--danger)}
 .btn.block{display:flex;width:100%}
+details.lab{margin-top:14px;border-top:1px dashed var(--line);padding-top:9px}
+details.lab>summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:600;min-height:32px;
+  display:flex;align-items:center;gap:6px;list-style:none}
+details.lab>summary::-webkit-details-marker{display:none}
+details.lab>summary::before{content:"▸";display:inline-block;transition:transform .15s}
+details.lab[open]>summary::before{transform:rotate(90deg)}
 .btn.sm{min-height:38px;padding:6px 10px;font-size:12.5px}
 .row{display:flex;gap:8px}
 .row>*{flex:1}
@@ -761,6 +769,8 @@ label.fld{display:block;font-size:11.5px;color:var(--muted);font-weight:600;marg
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:12px;height:12px;border-radius:3px;display:inline-block;border:1px solid rgba(0,0,0,.15)}
 .legend i.line{height:3px;border-radius:2px}
+.legend i.rowsw{width:18px;height:9px;border-radius:2px;border:0;
+  background:repeating-linear-gradient(90deg,var(--rowc,var(--c-row)) 0 5px,transparent 5px 8px) 0 3.5px/100% 2px no-repeat,var(--rowbg,#ece8df)}
 .legend i.dash{height:0;border:0;border-top:2px dashed var(--c-orig);width:14px;border-radius:0}
 
 .instr{display:flex;gap:10px;margin-top:9px}
@@ -885,7 +895,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <span id="lgImp"><i class="line" style="background:var(--c-imp)"></i><span data-i18n="lg_imp">เส้นที่โหลด</span></span>
         <span><i class="line" style="background:var(--c-ab)"></i><span data-i18n="lg_ab">เส้น AB</span></span>
         <span><i class="dash"></i><span data-i18n="lg_abOrig">AB เดิม</span></span>
-        <span id="lgRows" class="hidden"><i class="line" style="background:var(--c-row)"></i><span data-i18n="lg_rows">แถวปลูก</span></span>
+        <span id="lgRows" class="hidden"><i class="rowsw" id="lgRowsSw"></i><span data-i18n="lg_rows">เส้นแนวแถว</span></span>
         <span id="lgSpray" class="hidden"><i style="background:var(--c-spray)"></i><span data-i18n="lg_spray">แถบพ่น</span></span>
         <span><i style="background:var(--c-a)"></i>A</span>
         <span><i style="background:var(--c-b)"></i>B</span>
@@ -937,6 +947,10 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       <button class="btn ghost sm block" id="jdCopyAll" style="margin-top:9px" data-i18n="jd_copyall">คัดลอกทั้งหมด</button>
       <p class="hint" data-i18n="jd_headnote">ทิศทาง: 0 = เหนือ · 90 = ตะวันออก · 180 = ใต้ · 270 = ตะวันตก</p>
 
+      <!-- .gjson + Rx: not yet confirmed on a real display, so folded away (closed by
+           default) rather than removed — one tap opens it for a field test. -->
+      <details class="lab" id="jdLab">
+      <summary data-i18n="jd_lab_sum">ทดลอง: ไฟล์สำหรับจอ JD (.gjson / Rx) — ยังไม่ยืนยัน</summary>
       <h2 style="margin-top:15px" data-i18n="jd_gj_h">ขอบเขตแปลงสำหรับจอ JD</h2>
       <button class="btn block" id="btnGjson" data-i18n="jd_gjson">ส่งออก .gjson (รูปแบบของจอ)</button>
       <p class="hint" data-i18n="jd_gj_note">วางไฟล์ในโฟลเดอร์ Gen4\SpatialFiles บน USB (FAT32) — รูปแบบเดียวกับที่จอ export ออกมาเอง · ยังไม่ยืนยันว่าจอรับกลับ ลองแล้วบอกผลด้วยครับ</p>
@@ -945,12 +959,13 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       <button class="btn ghost block" id="btnRx" data-i18n="rx_export">ส่งออก Rx (.zip)</button>
       <p class="hint" data-i18n="rx_note">เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB</p>
       <p class="hint" style="color:var(--danger)" data-i18n="rx_warn">⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้</p>
+      </details>
     </section>
 
-    <!-- PLANTING ROWS (design aid only; never exported) -->
+    <!-- ROW LINES (exported with the rest when shown on the map) -->
     <section class="card hidden" id="card-rows">
-      <h2 data-i18n="rows_h">แถวปลูก</h2>
-      <label class="chk"><input type="checkbox" id="rowsOn"><span data-i18n="rows_show">แสดงแถวปลูกบนแผนที่</span></label>
+      <h2 data-i18n="rows_h">เส้นแนวแถว</h2>
+      <label class="chk"><input type="checkbox" id="rowsOn"><span data-i18n="rows_show">แสดงเส้นแนวแถวบนแผนที่</span></label>
       <label class="fld" style="margin-top:4px" data-i18n="rows_sp">ระยะระหว่างแถว (ซม.)</label>
       <input class="in mono" id="rowsSp" type="number" value="185" min="1" step="5" inputmode="decimal">
       <div class="instr">
@@ -958,7 +973,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <div class="cell"><div class="lab" data-i18n="rows_len">ความยาวรวม</div><div class="num mono"><span id="rowsL">–</span><small>m</small></div></div>
       </div>
       <p class="hint hidden" id="rowsWarn" data-i18n="rows_toomany">ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ</p>
-      <p class="hint" data-i18n="rows_note">เส้นแถวปลูกไว้ดูตอนออกแบบเท่านั้น — ไม่ถูกส่งออกไปในไฟล์</p>
+      <p class="hint" data-i18n="rows_note">ติ๊กแสดงบนแผนที่แล้ว เส้นแนวแถวจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก” — ไว้แสดงบนแผนที่ AllyNav ไม่ต้องใช้</p>
     </section>
 
     <!-- SPRAY STRIPS — a separate output: one comb polygon -->
@@ -991,11 +1006,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       </div>
       <p class="hint" id="spDir"></p>
       <p class="hint hidden" id="spWarn"></p>
-      <div class="row" style="margin-top:9px">
-        <button class="btn" id="btnSprayShp" data-i18n="spray_shp">Shapefile (.zip)</button>
-        <button class="btn" id="btnSprayKmz" data-i18n="spray_kmz">KMZ</button>
-      </div>
-      <p class="hint" data-i18n="spray_note">ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ไฟล์แยกจากขอบเขต+AB</p>
+      <p class="hint" data-i18n="spray_note">ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ติ๊กแสดงบนแผนที่แล้ว แถบพ่นจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก”</p>
     </section>
 
     <!-- EXPORT -->
@@ -1007,9 +1018,11 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       <p class="hint hidden" id="exNote"></p>
       <div class="row" style="margin-top:11px">
         <button class="btn" id="btnShp" data-i18n="export_shp">Shapefile (.zip)</button>
-        <button class="btn" id="btnKmz" data-i18n="export_kmz">KMZ</button>
+        <button class="btn" id="btnKml" data-i18n="export_kml">KML</button>
       </div>
-      <p class="hint" data-i18n="export_note">ส่งออกเฉพาะสิ่งที่ใช้จริง — สิ่งที่ไม่ได้โหลด/ไม่ได้ใช้ จะไม่ถูกส่งออก</p>
+      <button class="btn block" id="btnUsb" style="margin-top:9px" data-i18n="export_usb">บันทึกลง USB โดยตรง</button>
+      <p class="hint" id="usbNote" data-i18n="usb_note">เลือกแฟลชไดรฟ์ (หรือโฟลเดอร์ในนั้น) แล้วแอปจะเขียนโฟลเดอร์ shapefile ลงไปให้ — ไม่ต้องแตก zip · ไฟล์ชื่อเดิมจะถูกเขียนทับ</p>
+      <p class="hint" data-i18n="export_note">ส่งออกเฉพาะสิ่งที่ใช้จริง — แถบพ่นและเส้นแนวแถวจะออกไปด้วยเมื่อติ๊กแสดงบนแผนที่</p>
     </section>
 
     <section class="card" id="card-about">
@@ -1075,9 +1088,30 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
 <script>
 //MAIN-SCRIPT-BEGIN
 /* ===== APP META (APP_VER = single source) ===== */
-var APP_VER="1.15";
+var APP_VER="1.18";
 var DEV_EMAIL="vasu.ud@kmitl.ac.th";
 var CHANGELOG=[
+  {v:"1.18",d:"2026-10-28",
+   th:["เส้นแนวแถวเห็นชัดขึ้น: เส้นประหนาขึ้น สีเปลี่ยนตามแผนที่พื้นหลัง (ขาวบนภาพดาวเทียม · เขียวเข้มบนแผนที่ถนน) และวาดทับแถบพ่นแทนที่จะอยู่ใต้",
+       "ปุ่ม “บันทึกลง USB โดยตรง” แสดงตลอด — ถ้าใช้ไม่ได้ในเบราว์เซอร์หรือหน้าที่เปิดอยู่ ปุ่มจะเป็นสีจาง พร้อมบอกเหตุผลและทางเลือกใต้ปุ่ม แทนที่จะหายไปเฉย ๆ"],
+   en:["Row lines are easier to see: a heavier dashed line whose colour follows the base map (white on satellite · dark green on the street map), drawn above the spray strips instead of under them",
+       "The “Save straight to USB” button is always shown — where it cannot work it is greyed out with the reason and the alternative underneath, instead of silently disappearing"]},
+  {v:"1.17",d:"2026-10-28",
+   th:["ปุ่ม “บันทึกลง USB โดยตรง” — เลือกแฟลชไดรฟ์ แล้วแอปเขียนโฟลเดอร์ shapefile ลงไปให้เลย ไม่ต้องแตก zip (Chrome/Edge บนคอม และ Chrome บน Android · ไม่มีบน iPad/iPhone)",
+       "ส่งออกเป็น KML ไฟล์เดียวแทน KMZ — ไม่ต้องแตกไฟล์เช่นกัน",
+       "ส่งออก “เส้นแนวแถว” ได้แล้ว: ติ๊กแสดงบนแผนที่ แล้วจะได้โฟลเดอร์ <ชื่อ>_rows/ (และโฟลเดอร์ใน KML) เส้นละ 1 record ชื่อ R1, R2, … — ไว้แสดงบนแผนที่ AllyNav ไม่ต้องใช้",
+       "ส่วนที่ซ่อนในการ์ด John Deere (.gjson / Rx) เปลี่ยนเป็นแถบกดเพื่อเปิด แทนการต่อท้าย URL ด้วย ?lab"],
+   en:["“Save straight to USB” — pick the flash drive and the app writes the shapefile folders onto it, nothing to unzip (Chrome/Edge on a computer, Chrome on Android · not on iPad/iPhone)",
+       "Exports a single KML instead of a KMZ — nothing to unpack there either",
+       "Row lines can be exported: tick them on the map and you get a <name>_rows/ folder (and a KML folder), one record per line named R1, R2, … — for showing on maps; AllyNav does not need them",
+       "The hidden part of the John Deere card (.gjson / Rx) now opens with a tap instead of needing ?lab in the URL"]},
+  {v:"1.16",d:"2026-10-28",
+   th:["ส่งออกแถบพ่นจากกล่อง “ส่งออก” เดียวกับขอบเขต + AB — ติ๊ก “แสดงแถบพ่นบนแผนที่” แล้วไฟล์ .zip จะมีโฟลเดอร์ <ชื่อ>_spray/ เพิ่มเข้ามา โครงสร้างเดียวกับ _bound/ และ _AB/ (KMZ ก็มีโฟลเดอร์แถบพ่นเพิ่ม) · ปุ่มส่งออกแยกของแถบพ่นเอาออกแล้ว",
+       "เปลี่ยนชื่อ “แถวปลูก” เป็น “เส้นแนวแถว” — ใช้กับเครื่องที่ทำงานหลายแถวพร้อมกัน เช่น sprayer ได้ ไม่ใช่เฉพาะแถวปลูก",
+       "การ์ด John Deere เหลือแค่พิกัด A/B และทิศทางไว้พิมพ์เข้าจอ — การส่งออก .gjson และ Rx ซ่อนไว้จนกว่าจะได้ทดลองกับจอจริง (ต่อท้าย URL ด้วย ?lab เพื่อเปิด)"],
+   en:["Spray strips now export from the same Export box as the boundary + AB — tick “Show spray strips on the map” and the .zip gains a <name>_spray/ folder laid out like _bound/ and _AB/ (the KMZ gains a spray folder too) · the separate spray export buttons are gone",
+       "“Planting rows” renamed “Row lines” — they also serve multi-row machines such as sprayers, not only planting",
+       "The John Deere card now shows only the A/B coordinates and heading to type into the display — .gjson and Rx export are hidden until they are field-tested (add ?lab to the URL to show them)"]},
   {v:"1.15",d:"2026-10-28",
    th:["ยกเลิกแนวทางของ v1.14 ที่ย้ายแกนหวีออกไปนอกแปลง — กลับมาเป็นสันเชื่อมอยู่ในแปลง กว้าง 10 ซม. แบบ v1.13",
        "เหตุผล: รูปที่ไม่ล้ำออกนอกขอบแปลงอธิบายง่ายกว่า และเครื่องมือนี้ใช้กับงานแลป/งานสาธิตเป็นหลัก",
@@ -1216,11 +1250,11 @@ var I18N={
   choose_load:"โหลดที่เลือก", choose_none:"ไม่มีในไฟล์นี้", choose_nosel:"ยังไม่ได้เลือกอะไรเลย",
   pts:"จุด",
   loaded_h:"ข้อมูลที่โหลด", kv_bound:"ขอบเขต", kv_line:"เส้นที่โหลด", b_area:"พื้นที่",
-  lg_bound:"ขอบเขต", lg_ab:"เส้น AB", lg_abOrig:"AB เดิม", lg_imp:"เส้นที่โหลด", lg_rows:"แถวปลูก",
-  rows_h:"แถวปลูก", rows_show:"แสดงแถวปลูกบนแผนที่", rows_sp:"ระยะระหว่างแถว (ซม.)",
+  lg_bound:"ขอบเขต", lg_ab:"เส้น AB", lg_abOrig:"AB เดิม", lg_imp:"เส้นที่โหลด", lg_rows:"เส้นแนวแถว",
+  rows_h:"เส้นแนวแถว", rows_show:"แสดงเส้นแนวแถวบนแผนที่", rows_sp:"ระยะระหว่างแถว (ซม.)",
   rows_count:"จำนวนแถว", rows_len:"ความยาวรวม",
   rows_toomany:"ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ",
-  rows_note:"เส้นแถวปลูกไว้ดูตอนออกแบบเท่านั้น — ไม่ถูกส่งออกไปในไฟล์",
+  rows_note:"ติ๊กแสดงบนแผนที่แล้ว เส้นแนวแถวจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก” — ไว้แสดงบนแผนที่ AllyNav ไม่ต้องใช้",
   jd_h:"John Deere (G5 / Gen 4)",
   jd_note:"พิมพ์ค่าเหล่านี้เข้าจอ: Guidance → Create Track → Straight Track → วิธี Lat/Lon",
   jd_aLat:"A · lat", jd_aLon:"A · lon", jd_bLat:"B · lat", jd_bLon:"B · lon", jd_head:"heading",
@@ -1229,6 +1263,7 @@ var I18N={
   jd_gj_h:"ขอบเขตแปลงสำหรับจอ JD", jd_gjson:"ส่งออก .gjson (รูปแบบของจอ)",
   jd_gj_note:"วางไฟล์ในโฟลเดอร์ Gen4\\SpatialFiles บน USB (FAT32) — รูปแบบเดียวกับที่จอ export ออกมาเอง · ยังไม่ยืนยันว่าจอรับกลับ ลองแล้วบอกผลด้วยครับ",
   jd_need_bound:"ต้องมีขอบเขตแปลงก่อนจึงจะส่งออก .gjson ได้",
+  jd_lab_sum:"ทดลอง: ไฟล์สำหรับจอ JD (.gjson / Rx) — ยังไม่ยืนยัน",
   rx_h:"Rx — ชั้นไว้ดูบนจอ", rx_export:"ส่งออก Rx (.zip)",
   rx_note:"เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB",
   rx_warn:"⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้",
@@ -1242,11 +1277,9 @@ var I18N={
   spray_side:"ด้านที่วางสันเชื่อม", spray_left:"← ซ้าย", spray_right:"ขวา →",
   spray_cross:"หมุนแนวแถบ 90°",
   spray_n:"จำนวนแถบพ่น", spray_area:"พื้นที่พ่น",
-  spray_shp:"Shapefile (.zip)", spray_kmz:"KMZ",
-  spray_note:"ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ไฟล์แยกจากขอบเขต+AB",
+  spray_note:"ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ติ๊กแสดงบนแผนที่แล้ว แถบพ่นจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก”",
   spray_dir_ab:"แนวแถบ: ตั้งฉากกับเส้น AB (ขับตามเส้น AB แล้วจะสลับ เปิด/ปิด)",
   spray_dir_edge:"แนวแถบ: อิงขอบที่ยาวที่สุดของแปลง (ยังไม่ได้กำหนดเส้น AB)",
-  spray_need:"ยังสร้างแถบพ่นไม่ได้ — ตรวจค่าที่กรอกก่อน",
   spray_e_concave:"แปลงนี้มีมุมเว้า — ยังสร้างแถบพ่นให้ไม่ได้ ต้องเป็นแปลงนูน (ไม่มีมุมเว้า)",
   spray_e_spine:"สันเชื่อมกว้างเกินความกว้างแปลง — ลดค่าลง",
   spray_e_many:"แถบย่อยเกิน 500 แถบ — เพิ่มความกว้างแถบ",
@@ -1274,10 +1307,19 @@ var I18N={
   off_none:"อยู่บนเส้นเดิม", off_now:"ขยับ {0} ซม. ไปทาง{1}", off_now_m:"ขยับ {0} ซม. ({1} ม.) ไปทาง{2}",
   side_left:"ซ้าย", side_right:"ขวา",
   export_h:"ส่งออก", fn_label:"ชื่อไฟล์", fn_ph:"field01",
-  export_shp:"Shapefile (.zip)", export_kmz:"KMZ",
+  export_shp:"Shapefile (.zip)", export_kml:"KML",
+  export_usb:"บันทึกลง USB โดยตรง",
+  usb_note:"เลือกแฟลชไดรฟ์ (หรือโฟลเดอร์ในนั้น) แล้วแอปจะเขียนโฟลเดอร์ shapefile ลงไปให้ — ไม่ต้องแตก zip · ไฟล์ชื่อเดิมจะถูกเขียนทับ",
+  usb_done:"บันทึกลง “{1}” แล้ว — {0} โฟลเดอร์",
+  usb_fail:"บันทึกลง USB ไม่สำเร็จ: {0} — ใช้ปุ่ม Shapefile (.zip) แทน",
+  usb_no_frame:"ปุ่มนี้ใช้ไม่ได้ในหน้าตัวอย่าง — เปิดลิงก์ของแอปใน Chrome หรือ Edge แล้วจะกดได้ · ตอนนี้ใช้ Shapefile (.zip) แทน",
+  usb_no_secure:"ต้องเปิดแอปผ่านลิงก์ https (เช่น vasu-kmitl.github.io/abLinePlan) ปุ่มนี้จึงจะใช้ได้ · ตอนนี้ใช้ Shapefile (.zip) แทน",
+  usb_no_api:"เบราว์เซอร์นี้ไม่รองรับ — ใช้ได้กับ Chrome/Edge บนคอม และ Chrome บน Android (ไม่มีบน Safari, iPad/iPhone และ Firefox) · ตอนนี้ใช้ Shapefile (.zip) แทน",
   ex_boundonly:"ยังไม่มีเส้น AB — จะส่งออกเฉพาะขอบเขต",
   ex_abonly:"ไม่มีขอบเขต — จะส่งออกเฉพาะเส้น AB",
-  export_note:"ส่งออกเฉพาะสิ่งที่ใช้จริง — สิ่งที่ไม่ได้โหลด/ไม่ได้ใช้ จะไม่ถูกส่งออก",
+  ex_spray_bad:"แถบพ่นยังสร้างไม่ได้ (ดูคำเตือนในการ์ดแถบพ่น) — จะไม่ถูกส่งออก",
+  ex_rows_bad:"เส้นแนวแถวมากเกินไป (ดูคำเตือนในการ์ดเส้นแนวแถว) — จะไม่ถูกส่งออก",
+  export_note:"ส่งออกเฉพาะสิ่งที่ใช้จริง — แถบพ่นและเส้นแนวแถวจะออกไปด้วยเมื่อติ๊กแสดงบนแผนที่",
   changelog:"บันทึกการแก้ไข", unit_rai:"ไร่",
   theme_toLight:"โหมดสว่าง", theme_toDark:"โหมดมืด", map_osm:"แผนที่", map_sat:"ดาวเทียม",
   need_any:"ยังไม่มีอะไรให้ส่งออก",
@@ -1293,11 +1335,11 @@ var I18N={
   choose_load:"Load selected", choose_none:"none in this file", choose_nosel:"Nothing selected yet",
   pts:"pts",
   loaded_h:"Loaded", kv_bound:"Boundary", kv_line:"Loaded line", b_area:"Area",
-  lg_bound:"Boundary", lg_ab:"AB line", lg_abOrig:"Original AB", lg_imp:"Loaded line", lg_rows:"Planting rows",
-  rows_h:"Planting rows", rows_show:"Show planting rows on the map", rows_sp:"Row spacing (cm)",
+  lg_bound:"Boundary", lg_ab:"AB line", lg_abOrig:"Original AB", lg_imp:"Loaded line", lg_rows:"Row lines",
+  rows_h:"Row lines", rows_show:"Show row lines on the map", rows_sp:"Row spacing (cm)",
   rows_count:"Rows", rows_len:"Total length",
   rows_toomany:"Spacing too small (over 2000 rows) — try a larger spacing",
-  rows_note:"Planting rows are a design aid only — they are never exported",
+  rows_note:"Once shown on the map, row lines export with the boundary + AB from the Export box — for showing on maps; AllyNav does not need them",
   jd_h:"John Deere (G5 / Gen 4)",
   jd_note:"Type these into the display: Guidance → Create Track → Straight Track → Lat/Lon method",
   jd_aLat:"A · lat", jd_aLon:"A · lon", jd_bLat:"B · lat", jd_bLon:"B · lon", jd_head:"heading",
@@ -1306,6 +1348,7 @@ var I18N={
   jd_gj_h:"Field boundary for the JD display", jd_gjson:"Export .gjson (display format)",
   jd_gj_note:"Put the file in Gen4\\SpatialFiles on a FAT32 USB — same format the display exports itself · not yet confirmed that the display reads it back, please report what happens",
   jd_need_bound:"Load a boundary first to export a .gjson",
+  jd_lab_sum:"Experimental: files for the JD display (.gjson / Rx) — not yet confirmed",
   rx_h:"Rx — on-screen reference layer", rx_export:"Export Rx (.zip)",
   rx_note:"Adds the numeric column the display said was missing → the import succeeds and the field shows up in the cab · the AB line goes out as a 0.5 m corridor · unzip into the Rx folder on the USB",
   rx_warn:"⚠ Rx is for looking at only — it is not a boundary and not a guidance line; AutoTrac cannot follow it",
@@ -1319,11 +1362,9 @@ var I18N={
   spray_side:"Edge carrying the spine", spray_left:"← Left", spray_right:"Right →",
   spray_cross:"Rotate bands 90°",
   spray_n:"Spray bands", spray_area:"Sprayed area",
-  spray_shp:"Shapefile (.zip)", spray_kmz:"KMZ",
-  spray_note:"One polygon: the teeth are joined by a spine along one edge, so a sprayer that toggles on the boundary follows this shape · exported separately from boundary + AB",
+  spray_note:"One polygon: the teeth are joined by a spine along one edge, so a sprayer that toggles on the boundary follows this shape · once shown on the map, the strips export with the boundary + AB from the Export box",
   spray_dir_ab:"Band direction: perpendicular to the AB line (drive the AB line and the booms toggle)",
   spray_dir_edge:"Band direction: from the field's longest edge (no AB line set)",
-  spray_need:"Cannot build the strips yet — check the widths",
   spray_e_concave:"This field has a concave corner — strips need a convex field for now",
   spray_e_spine:"The spine is wider than the field — reduce it",
   spray_e_many:"Over 500 bands — widen the bands",
@@ -1351,10 +1392,19 @@ var I18N={
   off_none:"On the original line", off_now:"Shifted {0} cm to the {1}", off_now_m:"Shifted {0} cm ({1} m) to the {2}",
   side_left:"left", side_right:"right",
   export_h:"Export", fn_label:"File name", fn_ph:"field01",
-  export_shp:"Shapefile (.zip)", export_kmz:"KMZ",
+  export_shp:"Shapefile (.zip)", export_kml:"KML",
+  export_usb:"Save straight to USB",
+  usb_note:"Pick the flash drive (or a folder on it) and the app writes the shapefile folders there — nothing to unzip · files with the same names are overwritten",
+  usb_done:"Saved to “{1}” — {0} folder(s)",
+  usb_fail:"Could not save to USB: {0} — use Shapefile (.zip) instead",
+  usb_no_frame:"Not available inside a preview — open the app's link in Chrome or Edge to use it · use Shapefile (.zip) for now",
+  usb_no_secure:"The app must be opened from an https link (e.g. vasu-kmitl.github.io/abLinePlan) for this to work · use Shapefile (.zip) for now",
+  usb_no_api:"This browser does not support it — works in Chrome/Edge on a computer and Chrome on Android (not Safari, iPad/iPhone or Firefox) · use Shapefile (.zip) for now",
   ex_boundonly:"No AB line yet — the boundary alone will be exported",
   ex_abonly:"No boundary — the AB line alone will be exported",
-  export_note:"Only what you actually use is exported — anything not loaded or not used is left out",
+  ex_spray_bad:"The spray strips cannot be built yet (see the warning in their card) — they will be left out",
+  ex_rows_bad:"Too many row lines (see the warning in their card) — they will be left out",
+  export_note:"Only what you actually use is exported — spray strips and row lines go too while they are shown on the map",
   changelog:"Changelog", unit_rai:"rai",
   theme_toLight:"Light mode", theme_toDark:"Dark mode", map_osm:"Map", map_sat:"Satellite",
   need_any:"Nothing to export yet",
@@ -1808,7 +1858,7 @@ function clipLineUTM(P0,D,R){                       // infinite line P0 + t*D  v
                          {E:P0.E+D.E*sg[1], N:P0.N+D.N*sg[1]}]);
 }
 function plantingRows(poly, A, B, spacing, cap){
-  const out={rows:[], count:0, totalM:0, tooMany:false};
+  const out={rows:[], idx:[], count:0, totalM:0, tooMany:false};
   if(!poly || poly.length<3 || !A || !B || !(spacing>0)) return out;
   const ua=LL2UTM(A.lat,A.lon), ub=LL2UTM(B.lat,B.lon), zone=ua.Zone;
   let dE=ub.E-ua.E, dN=ub.N-ua.N; const len=Math.hypot(dE,dN);
@@ -1829,6 +1879,7 @@ function plantingRows(poly, A, B, spacing, cap){
     for(const sg of segs){
       out.totalM += Math.hypot(sg[1].E-sg[0].E, sg[1].N-sg[0].N);
       out.rows.push([UTM2LL(sg[0].E,sg[0].N,zone), UTM2LL(sg[1].E,sg[1].N,zone)]);
+      out.idx.push(out.count);                      // 1-based row number this piece belongs to
     }
   }
   return out;
@@ -2034,68 +2085,49 @@ function sprayStrips(poly, A, B, opt){
            teeth:teeth, areaM2:areaM2, fieldM2:fieldM2, neckM:neck,
            pct: fieldM2 ? 100*areaM2/fieldM2 : 0, ok:true, reason:'' };
 }
-/* ---- spray strips: its own export pair, never mixed with boundary + AB ---- */
-function sprayNames(filename){ const base=fnSafe(filename)||'field'; return {base:base, sprayName:base+'_spray'}; }
-function buildSprayZip(ring, filename){
-  if(!ring || ring.length<3) return null;
-  const n=sprayNames(filename);
-  const f=writeShapefile([{type:'polygon',parts:[buildBoundaryRing(ring)],attrs:{Name:n.sprayName}}],[{name:'Name',length:50}]);
-  const files=[];
-  [['shp',f.shp],['shx',f.shx],['dbf',f.dbf],['prj',f.prj]].forEach(function(e){
-    files.push({name:n.sprayName+'/'+n.sprayName+'.'+e[0], data:e[1]}); });
-  return {zip:makeZip(files), name:n.sprayName+'.zip', sprayName:n.sprayName};
-}
-function buildSprayKML(ring, filename){
-  if(!ring || ring.length<3) return null;
-  const n=sprayNames(filename);
-  const c=buildBoundaryRing(ring).map(q=>q[0]+','+q[1]+',0').join(' ');
-  return '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document>\n'+
-    '<name>'+xmlEsc(n.sprayName)+'</name>\n'+
-    '<Style id="sSpray"><LineStyle><color>ffd4b800</color><width>2</width></LineStyle>'+
-    '<PolyStyle><color>55d4b800</color></PolyStyle></Style>\n'+
-    '<Placemark><name>'+xmlEsc(n.sprayName)+'</name><styleUrl>#sSpray</styleUrl>'+
-    '<Polygon><altitudeMode>clampToGround</altitudeMode><outerBoundaryIs><LinearRing>'+
-    '<coordinates>'+c+'</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n'+
-    '</Document></kml>\n';
-}
-function buildSprayKMZ(ring, filename){
-  const k=buildSprayKML(ring,filename); if(!k) return null;
-  const n=sprayNames(filename);
-  return {kmz:makeZip([{name:'doc.kml', data:new TextEncoder().encode(k)}]), name:n.sprayName+'.kmz', kml:k};
-}
-
 function buildBoundaryRing(poly){
   let ring=poly.map(p=>[p.lon,p.lat]);
   if(ring.length){const a=ring[0],b=ring[ring.length-1]; if(a[0]!==b[0]||a[1]!==b[1])ring.push([a[0],a[1]]);}
   return ensureCW(ring);
 }
 function exportNames(filename){ const base=fnSafe(filename)||'field';
-  return {base:base, boundName:base+'_bound', abName:base+'_AB'}; }
+  return {base:base, boundName:base+'_bound', abName:base+'_AB', sprayName:base+'_spray', rowsName:base+'_rows'}; }
 
-/* --- Shapefile bundle. BOTH parts optional: boundary-only, AB-only, or both --- */
-function buildExportZip(poly, abA, abB, filename){
+/* --- Export layers, one shapefile folder each, every layer optional.
+       spray = the comb ring; rows = {rows:[[ll,ll],…], idx:[row no.,…]}.
+       Both are passed only while they are shown on the map (what you see is what you export).
+       The same file list feeds the .zip AND the save-straight-to-USB writer. --- */
+function rowsOk(rows){ return !!(rows && rows.rows && rows.rows.length); }
+function rowLabel(rows,i){ return 'R'+((rows.idx && rows.idx[i]) || (i+1)); }
+function buildExportFiles(poly, abA, abB, filename, spray, rows){
   const n=exportNames(filename);
-  const hasB=!!(poly&&poly.length>=3), hasAB=!!(abA&&abB);
-  if(!hasB && !hasAB) return null;
-  const files=[];
-  if(hasB){
-    const bF=writeShapefile([{type:'polygon',parts:[buildBoundaryRing(poly)],attrs:{Name:n.boundName}}],[{name:'Name',length:50}]);
-    [['shp',bF.shp],['shx',bF.shx],['dbf',bF.dbf],['prj',bF.prj]].forEach(function(e){
-      files.push({name:n.boundName+'/'+n.boundName+'.'+e[0], data:e[1]}); });
-  }
-  if(hasAB){
-    const aF=writeShapefile([{type:'polyline',parts:[[[abA.lon,abA.lat],[abB.lon,abB.lat]]],attrs:{Name:n.abName}}],[{name:'Name',length:50}]);
-    [['shp',aF.shp],['shx',aF.shx],['dbf',aF.dbf],['prj',aF.prj]].forEach(function(e){
-      files.push({name:n.abName+'/'+n.abName+'.'+e[0], data:e[1]}); });
-  }
-  return {zip:makeZip(files), name:n.base+'.zip', boundName:n.boundName, abName:n.abName, hasBound:hasB, hasAB:hasAB};
+  const hasB=!!(poly&&poly.length>=3), hasAB=!!(abA&&abB), hasS=!!(spray&&spray.length>=3), hasR=rowsOk(rows);
+  if(!hasB && !hasAB && !hasS && !hasR) return null;
+  const files=[], NAME=[{name:'Name',length:50}];
+  const add=function(name,f){
+    [['shp',f.shp],['shx',f.shx],['dbf',f.dbf],['prj',f.prj]].forEach(function(e){
+      files.push({name:name+'/'+name+'.'+e[0], data:e[1]}); }); };
+  if(hasB)  add(n.boundName, writeShapefile([{type:'polygon',parts:[buildBoundaryRing(poly)],attrs:{Name:n.boundName}}],NAME));
+  if(hasAB) add(n.abName,    writeShapefile([{type:'polyline',parts:[[[abA.lon,abA.lat],[abB.lon,abB.lat]]],attrs:{Name:n.abName}}],NAME));
+  if(hasS)  add(n.sprayName, writeShapefile([{type:'polygon',parts:[buildBoundaryRing(spray)],attrs:{Name:n.sprayName}}],NAME));
+  if(hasR)  add(n.rowsName,  writeShapefile(rows.rows.map(function(sg,i){
+              return {type:'polyline', parts:[[[sg[0].lon,sg[0].lat],[sg[1].lon,sg[1].lat]]], attrs:{Name:rowLabel(rows,i)}}; }),NAME));
+  return {files:files, base:n.base, boundName:n.boundName, abName:n.abName, sprayName:n.sprayName, rowsName:n.rowsName,
+          hasBound:hasB, hasAB:hasAB, hasSpray:hasS, hasRows:hasR};
+}
+function buildExportZip(poly, abA, abB, filename, spray, rows){
+  const b=buildExportFiles(poly, abA, abB, filename, spray, rows);
+  if(!b) return null;
+  b.zip=makeZip(b.files); b.name=b.base+'.zip';
+  return b;
 }
 
-/* --- KML / KMZ: one Folder per exported feature (folders omitted when unused) --- */
-function buildKML(poly, abA, abB, filename){
+/* --- KML: one Folder per exported layer (folders omitted when unused).
+       A single plain file — KMZ (a zip) was dropped in v1.17 so nothing needs unpacking --- */
+function buildKML(poly, abA, abB, filename, spray, rows){
   const n=exportNames(filename);
-  const hasB=!!(poly&&poly.length>=3), hasAB=!!(abA&&abB);
-  if(!hasB && !hasAB) return null;
+  const hasB=!!(poly&&poly.length>=3), hasAB=!!(abA&&abB), hasS=!!(spray&&spray.length>=3), hasR=rowsOk(rows);
+  if(!hasB && !hasAB && !hasS && !hasR) return null;
   const ICON='http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png';
   let s='<?xml version="1.0" encoding="UTF-8"?>\n'+
   '<kml xmlns="http://www.opengis.net/kml/2.2"><Document>\n'+
@@ -2105,7 +2137,10 @@ function buildKML(poly, abA, abB, filename){
   '<PolyStyle><color>1a008fff</color></PolyStyle></Style>\n'+
   '<Style id="sAB"><LineStyle><color>ffe06f1e</color><width>3</width></LineStyle></Style>\n'+
   '<Style id="sA"><IconStyle><color>ff5f9e2f</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n'+
-  '<Style id="sB"><IconStyle><color>ff4545e0</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n';
+  '<Style id="sB"><IconStyle><color>ff4545e0</color><scale>1.1</scale><Icon><href>'+ICON+'</href></Icon></IconStyle></Style>\n'+
+  '<Style id="sSpray"><LineStyle><color>ffd4b800</color><width>2</width></LineStyle>'+
+  '<PolyStyle><color>55d4b800</color></PolyStyle></Style>\n'+
+  '<Style id="sRows"><LineStyle><color>ffaebf57</color><width>1</width></LineStyle></Style>\n';
   if(hasB){
     const cB=buildBoundaryRing(poly).map(p=>p[0]+','+p[1]+',0').join(' ');
     s+='<Folder><name>'+xmlEsc(n.boundName)+'</name><visibility>1</visibility>\n'+
@@ -2123,12 +2158,23 @@ function buildKML(poly, abA, abB, filename){
     '<Placemark><name>B</name><styleUrl>#sB</styleUrl><Point><coordinates>'+abB.lon+','+abB.lat+',0</coordinates></Point></Placemark>\n'+
     '</Folder>\n';
   }
+  if(hasS){
+    const cS=buildBoundaryRing(spray).map(p=>p[0]+','+p[1]+',0').join(' ');
+    s+='<Folder><name>'+xmlEsc(n.sprayName)+'</name><visibility>1</visibility>\n'+
+    '<Placemark><name>'+xmlEsc(n.sprayName)+'</name><styleUrl>#sSpray</styleUrl>'+
+    '<Polygon><altitudeMode>clampToGround</altitudeMode><outerBoundaryIs><LinearRing>'+
+    '<coordinates>'+cS+'</coordinates></LinearRing></outerBoundaryIs></Polygon></Placemark>\n</Folder>\n';
+  }
+  if(hasR){
+    s+='<Folder><name>'+xmlEsc(n.rowsName)+'</name><visibility>1</visibility>\n';
+    rows.rows.forEach(function(sg,i){
+      s+='<Placemark><name>'+rowLabel(rows,i)+'</name><styleUrl>#sRows</styleUrl>'+
+         '<LineString><tessellate>1</tessellate><altitudeMode>clampToGround</altitudeMode>'+
+         '<coordinates>'+sg[0].lon+','+sg[0].lat+',0 '+sg[1].lon+','+sg[1].lat+',0</coordinates></LineString></Placemark>\n';
+    });
+    s+='</Folder>\n';
+  }
   return s+'</Document></kml>';
-}
-function buildExportKMZ(poly, abA, abB, filename){
-  const n=exportNames(filename), kml=buildKML(poly,abA,abB,filename);
-  if(!kml) return null;
-  return {kmz:makeZip([{name:'doc.kml', data:new TextEncoder().encode(kml)}]), name:n.base+'.kmz', kml:kml};
 }
 
 /* ---- GeoJSON (.gjson/.geojson) ------------------------------------------
@@ -2365,10 +2411,10 @@ if (typeof module !== 'undefined' && module.exports) {
     parseGeoJSON, uuid4, buildJDBoundary, jdBoundaryFileName, jdTrackFields,
     dbfToNumeric, abCorridor, buildRxZip,
     ringIsConvex, ringCCW, clipConvexSH, cleanRing, ringAreaUV, longestEdge,
-    sprayStrips, sprayNames, buildSprayZip, buildSprayKML, buildSprayKMZ,
+    sprayStrips,
     convexChain, chainVAt,
     nearestVertexIdx, lineEndpoints, buildBoundaryRing, exportNames,
-    buildExportZip, buildKML, buildExportKMZ,
+    buildExportFiles, buildExportZip, buildKML, rowsOk, rowLabel,
     parseKMLLines, dbfNames, shpFeatures, shpEntriesToFeatures, parseSWMapsAll,
     parseAnyToFeatures, i18nParity
   });
@@ -2379,7 +2425,7 @@ var map=null, layers={}, baseOSM=null, baseSat=null;
 /* poly & line are BOTH optional. A/B are free points snapped to any loaded vertex. */
 var state={ poly:null, polyName:"", line:null, A:null, B:null, aKey:null, bKey:null, pickMode:null, abOff:0 };
 var pend={ polygons:[], lines:[], b:null, l:null };     // pending import choice
-var rowsInfo={ rows:[], count:0, totalM:0, tooMany:false };
+var rowsInfo={ rows:[], idx:[], count:0, totalM:0, tooMany:false };
 var sprayInfo={ ring:[], teeth:0, areaM2:0, fieldM2:0, pct:0, ok:false, reason:'' };
 var spraySide='left';
 function sprayNum(id,d){ var v=parseFloat(el(id).value); return (isFinite(v)&&v>0)?v:d; }
@@ -2413,8 +2459,8 @@ function buildMap(){
   baseSat.addTo(map);
   map.setView([15.87,100.99],6);
   layers.cand=L.layerGroup().addTo(map);      // import-chooser preview
-  layers.rows=L.layerGroup().addTo(map);      // planting rows (design aid, drawn underneath)
   layers.spray=L.layerGroup().addTo(map);     // spray strips (its own output)
+  layers.rows=L.layerGroup().addTo(map);      // row lines: thin dashes ABOVE the spray fill, so the fill cannot wash them out
   layers.boundary=L.layerGroup().addTo(map);
   layers.imp=L.layerGroup().addTo(map);
   layers.ab=L.layerGroup().addTo(map);
@@ -2434,6 +2480,7 @@ function setBase(which){
   else   { if(map.hasLayer(baseSat))map.removeLayer(baseSat); if(!map.hasLayer(baseOSM))baseOSM.addTo(map); }
   el("bpSat").classList.toggle("active",sat);
   el("bpOsm").classList.toggle("active",!sat);
+  redraw();                                   // row-line colour follows the base map
 }
 
 /* ---- rendering ---- */
@@ -2442,15 +2489,15 @@ function redraw(){
   layers.boundary.clearLayers(); layers.imp.clearLayers(); layers.ab.clearLayers();
   layers.verts.clearLayers(); layers.rows.clearLayers(); layers.spray.clearLayers();
   /* planting rows: computed from the NUDGED AB line, clipped to the boundary.
-     Drawn first => they sit under the boundary/AB. Never exported. */
+     Drawn first => they sit under the boundary/AB. Exported only while shown. */
   var Pab=abPts();
   rowsInfo = (state.poly && hasAB())
     ? plantingRows(state.poly, Pab[0], Pab[1], rowSpacingM(), 2000)
-    : {rows:[],count:0,totalM:0,tooMany:false};
+    : {rows:[],idx:[],count:0,totalM:0,tooMany:false};
   if(state.poly && hasAB() && el("rowsOn").checked){
     rowsInfo.rows.forEach(function(sg){
       L.polyline([[sg[0].lat,sg[0].lon],[sg[1].lat,sg[1].lon]],
-        {color:cssvar("--c-row"),weight:1,opacity:.55,interactive:false}).addTo(layers.rows);
+        rowLineStyle()).addTo(layers.rows);
     });
   }
   /* spray strips: one comb polygon clipped to the field. Computed whenever a
@@ -2501,6 +2548,12 @@ function redraw(){
   updateInfo();
 }
 function abPts(){ return abDisplayPts(state.A, state.B, state.abOff); }
+/* Row lines must stay quieter than boundary (2 px) and AB (3.5 px) yet readable on BOTH
+   base maps: a dark green vanishes into satellite imagery and white vanishes on the
+   street map, so the colour follows whichever base map is showing. */
+function onSatellite(){ return !!(map && baseSat && map.hasLayer(baseSat)); }
+function rowLineColor(){ return onSatellite() ? "#ffffff" : cssvar("--c-row"); }
+function rowLineStyle(){ return {color:rowLineColor(), weight:1.6, opacity:.9, dashArray:"6,4", interactive:false}; }
 function abMarker(pt,txt,cls){
   var m=L.circleMarker([pt.lat,pt.lon],
     {radius:9,color:"#fff",weight:2,fillColor:cssvar(cls==="a"?"--c-a":"--c-b"),
@@ -2536,7 +2589,8 @@ function updateInfo(){
     el("abReadout").classList.remove("hidden");
   } else el("abReadout").classList.add("hidden");
   /* John Deere card: the exact numbers to type into a G5 / Gen 4 display */
-  el("card-jd").classList.toggle("hidden", !(hasAB() || state.poly));
+  /* the card is about the coordinates to type in, so it waits for an AB line */
+  el("card-jd").classList.toggle("hidden", !hasAB());
   var jd=jdTrackFields(Pab2[0], Pab2[1]);
   ["jdALat","jdALon","jdBLat","jdBLon","jdHead"].forEach(function(id,i){
     var v = jd ? [jd.aLat,jd.aLon,jd.bLat,jd.bLon,jd.heading][i] : null;
@@ -2545,6 +2599,9 @@ function updateInfo(){
   var canRows=!!(state.poly && hasAB());
   el("card-rows").classList.toggle("hidden", !canRows);
   el("lgRows").classList.toggle("hidden", !(canRows && el("rowsOn").checked));
+  /* legend chip = the dashes on a patch of the base map they are drawn over */
+  el("lgRowsSw").style.setProperty("--rowc", rowLineColor());
+  el("lgRowsSw").style.setProperty("--rowbg", onSatellite() ? "#4d5a45" : "#ece8df");
   if(canRows){
     if(rowsInfo.tooMany){
       el("rowsN").textContent="–"; el("rowsL").textContent="–";
@@ -2597,9 +2654,15 @@ function updateAbHint(){
 function updateExPreview(){
   var box=el("exNames"); if(!box)return;
   var n=exportNames(el("fname").value), b=!!state.poly, ab=hasAB();
+  var canSpray=!!(state.poly && sprayDir()), sp=!!sprayForExport();
+  var canRows=!!(state.poly && ab), rw=!!rowsForExport();
   box.innerHTML='<code class="'+(b?"on":"off")+'">'+n.boundName+'/</code>'+
-                '<code class="'+(ab?"on":"off")+'">'+n.abName+'/</code>';
-  var msg = (b&&!ab)? t("ex_boundonly") : (!b&&ab)? t("ex_abonly") : "";
+                '<code class="'+(ab?"on":"off")+'">'+n.abName+'/</code>'+
+                (canSpray ? '<code class="'+(sp?"on":"off")+'">'+n.sprayName+'/</code>' : '')+
+                (canRows  ? '<code class="'+(rw?"on":"off")+'">'+n.rowsName+'/</code>'  : '');
+  var msg = (canSpray && el("sprayOn").checked && !sprayInfo.ok) ? t("ex_spray_bad")
+          : (canRows && el("rowsOn").checked && rowsInfo.tooMany) ? t("ex_rows_bad")
+          : (b&&!ab)? t("ex_boundonly") : (!b&&ab)? t("ex_abonly") : "";
   el("exNote").textContent=msg;
   el("exNote").classList.toggle("hidden",!msg);
 }
@@ -2767,13 +2830,48 @@ async function download(filename,bytes,mime){
   setTimeout(function(){ URL.revokeObjectURL(url); },1500);
 }
 function abForExport(){ return hasAB() ? abPts() : null; }   // exactly the points the markers show
+/* spray goes out only when it is switched on AND valid — what you see is what you get */
+function sprayForExport(){ return (el("sprayOn").checked && sprayInfo.ok) ? sprayInfo.ring : null; }
+function rowsForExport(){ return (el("rowsOn").checked && state.poly && hasAB() && !rowsInfo.tooMany && rowsInfo.rows.length) ? rowsInfo : null; }
+/* File System Access: write the folders straight onto the drive. Chrome/Edge desktop and
+   Chrome Android have it; Safari (iPad/iPhone) and Firefox do not, and no browser allows it
+   inside a sandboxed preview frame — the button only appears where it can work. */
+/* why the button cannot work HERE (an i18n key), or "" when it can */
+function dirSaveBlock(){
+  var framed=false; try{ framed=(window.self!==window.top); }catch(e){ framed=true; }
+  if(framed) return "usb_no_frame";                         // e.g. a chat or file preview
+  if(window.isSecureContext===false) return "usb_no_secure"; // plain http / some local-file viewers (block only when KNOWN insecure)
+  if(typeof window.showDirectoryPicker!=="function") return "usb_no_api";   // Safari, Firefox
+  return "";
+}
+function canDirSave(){ return dirSaveBlock()===""; }
 function canExport(){ if(!state.poly && !hasAB()){ toast(t("need_any")); return false; } return true; }
 function exportSHP(){ if(!canExport())return; var e=abForExport();
-  var out=buildExportZip(state.poly, e&&e[0], e&&e[1], el("fname").value);
+  var out=buildExportZip(state.poly, e&&e[0], e&&e[1], el("fname").value, sprayForExport(), rowsForExport());
   if(out) download(out.name,out.zip,"application/zip"); }
-function exportKMZ(){ if(!canExport())return; var e=abForExport();
-  var out=buildExportKMZ(state.poly, e&&e[0], e&&e[1], el("fname").value);
-  if(out) download(out.name,out.kmz,"application/vnd.google-earth.kmz"); }
+function exportKML(){ if(!canExport())return; var e=abForExport();
+  var kml=buildKML(state.poly, e&&e[0], e&&e[1], el("fname").value, sprayForExport(), rowsForExport());
+  if(kml) download(exportNames(el("fname").value).base+".kml", new TextEncoder().encode(kml),
+                   "application/vnd.google-earth.kml+xml"); }
+async function saveToUSB(){
+  if(!canExport())return; var e=abForExport();
+  var b=buildExportFiles(state.poly, e&&e[0], e&&e[1], el("fname").value, sprayForExport(), rowsForExport());
+  if(!b){ toast(t("need_any")); return; }
+  var dir;
+  try{ dir=await window.showDirectoryPicker({id:"ablineplan-usb", mode:"readwrite"}); }
+  catch(err){ if(err && err.name==="AbortError") return;           // picker closed = nothing to do
+              toast(t("usb_fail",(err&&err.message)||String(err))); return; }
+  try{
+    var made={};
+    for(var i=0;i<b.files.length;i++){
+      var f=b.files[i], parts=f.name.split("/"), d=dir;
+      for(var k=0;k<parts.length-1;k++){ d=await d.getDirectoryHandle(parts[k],{create:true}); made[parts[k]]=1; }
+      var fh=await d.getFileHandle(parts[parts.length-1],{create:true});
+      var wr=await fh.createWritable(); await wr.write(f.data); await wr.close();
+    }
+    toast(t("usb_done", Object.keys(made).length, dir.name||"USB"));
+  }catch(err){ toast(t("usb_fail",(err&&err.message)||String(err))); }
+}
 
 /* ---- chrome ---- */
 function openChangelog(){
@@ -2823,18 +2921,6 @@ function jdCopyAll(){
   if(jd.heading){ L.push("heading  "+jd.heading); w.push("heading"); }
   if(!L.length) return;
   copyText(L.join("\n")); toast(t("jd_copied", w.join(" / ")));
-}
-function exportSprayShp(){
-  if(!sprayInfo.ok){ toast(t("spray_need")); return; }
-  var out=buildSprayZip(sprayInfo.ring, el("fname").value);
-  if(!out){ toast(t("spray_need")); return; }
-  download(out.name, out.zip, "application/zip");
-}
-function exportSprayKmz(){
-  if(!sprayInfo.ok){ toast(t("spray_need")); return; }
-  var out=buildSprayKMZ(sprayInfo.ring, el("fname").value);
-  if(!out){ toast(t("spray_need")); return; }
-  download(out.name, out.kmz, "application/vnd.google-earth.kmz");
 }
 function exportRx(){
   var e=abForExport();
@@ -2913,8 +2999,6 @@ function bindUI(){
   ["spW","spK","spSpine"].forEach(function(id){ el(id).addEventListener("input",redraw); });
   el("spSideL").onclick=function(){ spraySide='left';  syncSpraySide(); redraw(); };
   el("spSideR").onclick=function(){ spraySide='right'; syncSpraySide(); redraw(); };
-  el("btnSprayShp").onclick=exportSprayShp;
-  el("btnSprayKmz").onclick=exportSprayKmz;
   syncSpraySide();
 
   el("rowsOn").addEventListener("change",redraw);
@@ -2922,7 +3006,14 @@ function bindUI(){
 
   el("fname").addEventListener("input",updateExPreview);
   el("btnShp").onclick=exportSHP;
-  el("btnKmz").onclick=exportKMZ;
+  el("btnKml").onclick=exportKML;
+  var why=dirSaveBlock();
+  if(why){                                   // keep it visible, greyed, with the reason in the note
+    el("btnUsb").disabled=true;
+    el("usbNote").setAttribute("data-i18n", why);   // applyLang keeps it in the chosen language
+    el("usbNote").classList.add("why");
+  }
+  el("btnUsb").onclick=saveToUSB;
 
   el("devMail").setAttribute("href","mailto:"+DEV_EMAIL);
   el("btnFb").onclick=fbOpen;
