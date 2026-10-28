@@ -743,6 +743,15 @@ html[data-theme="dark"] #map{background:#0b120d}
 .btn.two{flex-direction:column;gap:1px;line-height:1.2;padding-top:7px;padding-bottom:7px}
 .btn.two small{font-size:11.5px;font-weight:600;opacity:.85}
 details.lab{margin-top:14px;border-top:1px dashed var(--line);padding-top:9px}
+/* a whole card folded behind its title (John Deere) */
+.card.fold{padding-top:2px;padding-bottom:2px}
+.card.fold>details>summary{list-style:none;cursor:pointer;min-height:42px;display:flex;align-items:center}
+.card.fold>details>summary::-webkit-details-marker{display:none}
+.card.fold>details>summary>h2{margin:0;flex:1}
+.card.fold>details>summary>h2::before{content:"▸";display:inline-block;transition:transform .15s;letter-spacing:0}
+.card.fold>details[open]>summary>h2::before{transform:rotate(90deg)}
+.card.fold>details[open]{padding-bottom:12px}
+.card.fold>details[open]>summary{margin-bottom:4px}
 details.lab>summary{cursor:pointer;font-size:12.5px;color:var(--muted);font-weight:600;min-height:32px;
   display:flex;align-items:center;gap:6px;list-style:none}
 details.lab>summary::-webkit-details-marker{display:none}
@@ -756,6 +765,13 @@ label.fld{display:block;font-size:11.5px;color:var(--muted);font-weight:600;marg
   border-radius:8px;padding:10px;font-size:14px;outline:none;font-family:inherit;min-height:44px}
 .in:focus{border-color:var(--accent);background:var(--input-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
 .in::placeholder{color:var(--muted);opacity:.7}
+/* the export file name: big, accent-framed, with a pencil — it is meant to be changed */
+label.fnlab{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink)}
+.fnedit{font-size:10.5px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:1px 8px}
+.fnwrap{position:relative}
+.in.fn{font-size:17px;font-weight:700;border:2px solid var(--accent);padding-right:44px;
+  background:color-mix(in srgb,var(--accent) 7%,var(--input-bg))}
+.fnwrap .pen{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:18px;pointer-events:none}
 
 .drop{border:1.5px dashed var(--line);border-radius:10px;padding:16px;text-align:center;
   background:var(--panel2);cursor:pointer;transition:border-color .15s,background .15s}
@@ -882,7 +898,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <label class="fld" data-i18n="choose_ab">เส้น AB — line</label>
         <div id="chLineList" style="display:flex;flex-direction:column;gap:6px"></div>
       </div>
-      <p class="hint" data-i18n="choose_hint">แตะเพื่อเลือก (จะไฮไลต์บนแผนที่) · แตะซ้ำ = ไม่ใช้ · เลือกอย่างใดอย่างหนึ่ง หรือทั้งคู่ก็ได้</p>
+      <p class="hint" data-i18n="choose_hint">แตะเพื่อเลือก (ไฮไลต์บนแผนที่) · แตะซ้ำ = ยกเลิก · เลือกอย่างเดียวหรือทั้งคู่ก็ได้</p>
       <button class="btn block" id="btnLoad" style="margin-top:11px" data-i18n="choose_load">โหลดที่เลือก</button>
     </section>
 
@@ -913,7 +929,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <button class="btn danger" id="btnClearAB" style="flex:0 0 52px" data-i18n-title="ab_clear">✕</button>
       </div>
       <button class="btn ghost sm block hidden" id="btnUseLine" style="margin-top:7px" data-i18n="ab_useLine">ใช้ปลายเส้นที่โหลด</button>
-      <p class="hint" id="abHint" data-i18n="ab_none">แตะ “กำหนดจุด A” แล้วแตะใกล้จุดที่ต้องการ (บนขอบเขต หรือบนเส้นก็ได้)</p>
+      <p class="hint" id="abHint" data-i18n="ab_none">กด “กำหนดจุด A” แล้วแตะจุดบนขอบเขตหรือบนเส้น</p>
 
       <div class="instr hidden" id="abReadout">
         <div class="cell"><div class="lab" data-i18n="ab_heading">ทิศทาง</div><div class="num mono"><span id="abBearing">–</span><small>°</small></div></div>
@@ -930,38 +946,11 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <button class="btn ghost" id="offR" data-i18n="off_right">ขวา →</button>
       </div>
       <div class="row" style="margin-top:8px;align-items:flex-end">
-        <div style="flex:1"><label class="fld" data-i18n="off_step">ก้าวละ (ซม.)</label><input class="in mono" id="offStep" type="number" value="10" min="0.1" step="1" inputmode="decimal"></div>
+        <div style="flex:1"><label class="fld" data-i18n="off_step">สเต็ปละ (ซม.)</label><input class="in mono" id="offStep" type="number" value="10" min="0.1" step="1" inputmode="decimal"></div>
         <div style="flex:1"><button class="btn danger sm block" id="offReset" data-i18n="off_reset">รีเซ็ตเป็น 0</button></div>
       </div>
       <div class="sideNow" id="offNow"></div>
       <p class="hint" data-i18n="off_sign">+ = ขวาของทิศ A→B · − = ซ้าย</p>
-    </section>
-
-    <!-- JOHN DEERE (G5 / Gen 4) -->
-    <section class="card hidden" id="card-jd">
-      <h2 data-i18n="jd_h">John Deere (G5 / Gen 4)</h2>
-      <p class="hint" style="margin-top:0" data-i18n="jd_note">พิมพ์ค่าเหล่านี้เข้าจอ: Guidance → Create Track → Straight Track → วิธี Lat/Lon</p>
-      <div class="jdrow"><span class="lb" data-i18n="jd_aLat">A · lat</span><span class="vl" id="jdALat">–</span><button class="btn ghost cp" data-cp="jdALat">⧉</button></div>
-      <div class="jdrow"><span class="lb" data-i18n="jd_aLon">A · lon</span><span class="vl" id="jdALon">–</span><button class="btn ghost cp" data-cp="jdALon">⧉</button></div>
-      <div class="jdrow"><span class="lb" data-i18n="jd_bLat">B · lat</span><span class="vl" id="jdBLat">–</span><button class="btn ghost cp" data-cp="jdBLat">⧉</button></div>
-      <div class="jdrow"><span class="lb" data-i18n="jd_bLon">B · lon</span><span class="vl" id="jdBLon">–</span><button class="btn ghost cp" data-cp="jdBLon">⧉</button></div>
-      <div class="jdrow"><span class="lb" data-i18n="jd_head">heading</span><span class="vl" id="jdHead">–</span><button class="btn ghost cp" data-cp="jdHead">⧉</button></div>
-      <button class="btn ghost sm block" id="jdCopyAll" style="margin-top:9px" data-i18n="jd_copyall">คัดลอกทั้งหมด</button>
-      <p class="hint" data-i18n="jd_headnote">ทิศทาง: 0 = เหนือ · 90 = ตะวันออก · 180 = ใต้ · 270 = ตะวันตก</p>
-
-      <!-- .gjson + Rx: not yet confirmed on a real display, so folded away (closed by
-           default) rather than removed — one tap opens it for a field test. -->
-      <details class="lab" id="jdLab">
-      <summary data-i18n="jd_lab_sum">ทดลอง: ไฟล์สำหรับจอ JD (.gjson / Rx) — ยังไม่ยืนยัน</summary>
-      <h2 style="margin-top:15px" data-i18n="jd_gj_h">ขอบเขตแปลงสำหรับจอ JD</h2>
-      <button class="btn block" id="btnGjson" data-i18n="jd_gjson">ส่งออก .gjson (รูปแบบของจอ)</button>
-      <p class="hint" data-i18n="jd_gj_note">วางไฟล์ในโฟลเดอร์ Gen4\SpatialFiles บน USB (FAT32) — รูปแบบเดียวกับที่จอ export ออกมาเอง · ยังไม่ยืนยันว่าจอรับกลับ ลองแล้วบอกผลด้วยครับ</p>
-
-      <h2 style="margin-top:15px" data-i18n="rx_h">Rx — ชั้นไว้ดูบนจอ</h2>
-      <button class="btn ghost block" id="btnRx" data-i18n="rx_export">ส่งออก Rx (.zip)</button>
-      <p class="hint" data-i18n="rx_note">เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB</p>
-      <p class="hint" style="color:var(--danger)" data-i18n="rx_warn">⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้</p>
-      </details>
     </section>
 
     <!-- ROW LINES (exported with the rest when shown on the map) -->
@@ -975,12 +964,12 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <div class="cell"><div class="lab" data-i18n="rows_len">ความยาวรวม</div><div class="num mono"><span id="rowsL">–</span><small>m</small></div></div>
       </div>
       <p class="hint hidden" id="rowsWarn" data-i18n="rows_toomany">ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ</p>
-      <p class="hint" data-i18n="rows_note">ติ๊กแสดงบนแผนที่แล้ว เส้นแนวแถวจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก” — ไว้แสดงบนแผนที่ AllyNav ไม่ต้องใช้</p>
+      <p class="hint" data-i18n="rows_note">ไว้ดูบนแผนที่ — AllyNav ไม่ใช้</p>
     </section>
 
     <!-- SPRAY STRIPS — a separate output: one comb polygon -->
     <section class="card hidden" id="card-spray">
-      <h2 data-i18n="spray_h">แถบพ่น (รูปหวี)</h2>
+      <h2 data-i18n="spray_h">แถบพ่น (Demo)</h2>
       <label class="chk"><input type="checkbox" id="sprayOn"><span data-i18n="spray_on">แสดงแถบพ่นบนแผนที่</span></label>
       <div class="row" style="margin-top:6px">
         <div style="flex:1">
@@ -993,7 +982,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         </div>
       </div>
       <p class="hint" id="spPitch" style="margin-top:4px"></p>
-      <label class="fld" style="margin-top:4px" data-i18n="spray_spine">สันเชื่อม (ม.) — ตัวที่ทำให้เป็นรูปเดียว</label>
+      <label class="fld" style="margin-top:4px" data-i18n="spray_spine">สันเชื่อม (ม.)</label>
       <input class="in mono" id="spSpine" type="number" value="0.1" min="0.1" step="0.1" inputmode="decimal">
       <p class="hint" id="spNeck"></p>
       <label class="fld" style="margin-top:7px" data-i18n="spray_side">ด้านที่วางสันเชื่อม</label>
@@ -1008,14 +997,14 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
       </div>
       <p class="hint" id="spDir"></p>
       <p class="hint hidden" id="spWarn"></p>
-      <p class="hint" data-i18n="spray_note">ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ติ๊กแสดงบนแผนที่แล้ว แถบพ่นจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก”</p>
+      <p class="hint" data-i18n="spray_note">ได้ polygon เดียว — สันเชื่อมทุกแถบไว้ด้านเดียว เครื่องพ่นที่เปิด/ปิดตามขอบเขตจึงพ่นตามรูปนี้ได้</p>
     </section>
 
     <!-- EXPORT -->
     <section class="card hidden" id="card-export">
       <h2 data-i18n="export_h">ส่งออก</h2>
-      <label class="fld" data-i18n="fn_label">ชื่อไฟล์</label>
-      <input class="in mono" id="fname" value="field" data-i18n-ph="fn_ph" placeholder="field01">
+      <label class="fld fnlab" for="fname"><span data-i18n="fn_label">ชื่อไฟล์</span><span class="fnedit" data-i18n="fn_edit">แก้ไขได้</span></label>
+      <div class="fnwrap"><input class="in mono fn" id="fname" value="field" data-i18n-ph="fn_ph" placeholder="field01" autocomplete="off" autocapitalize="off" spellcheck="false"><span class="pen" aria-hidden="true">✎</span></div>
       <div class="exline" id="exNames"></div>
       <p class="hint hidden" id="exNote"></p>
       <div class="row" style="margin-top:11px">
@@ -1023,8 +1012,38 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
         <button class="btn" id="btnKml" data-i18n="export_kml">KML</button>
       </div>
       <button class="btn block two" id="btnUsb" style="margin-top:9px"><span data-i18n="export_usb">บันทึกลงไดรฟ์…</span><small data-i18n="export_usb_sub">Shapefile + KML</small></button>
-      <p class="hint" id="usbNote" data-i18n="usb_note">เลือกไดรฟ์หรือโฟลเดอร์ปลายทาง — ในเครื่อง หรือแฟลชไดรฟ์ USB ก็ได้ · แอปจะสร้างโฟลเดอร์ชื่อเดียวกับ “ชื่อไฟล์” แล้วใส่ shapefile ทุกชั้นกับไฟล์ KML ไว้ข้างใน ไม่ต้องแตก zip · ถ้ามีโฟลเดอร์ชื่อนี้อยู่แล้ว จะถูกแทนที่ด้วยชุดนี้</p>
-      <p class="hint" data-i18n="export_note">ส่งออกเฉพาะสิ่งที่ใช้จริง — แถบพ่นและเส้นแนวแถวจะออกไปด้วยเมื่อติ๊กแสดงบนแผนที่</p>
+      <p class="hint" id="usbNote" data-i18n="usb_note">เลือกในเครื่องหรือแฟลชไดรฟ์ USB · ได้โฟลเดอร์ชื่อเดียวกับไฟล์ (ทุกชั้น + KML) ไม่ต้องแตก zip · ชื่อซ้ำจะทับของเดิม</p>
+      <p class="hint" data-i18n="export_note">ชื่อที่จาง = ไม่ส่งออก · แถบพ่นและเส้นแนวแถวออกไปด้วยเมื่อติ๊กแสดงบนแผนที่</p>
+    </section>
+
+    <!-- JOHN DEERE (G5 / Gen 4) — rarely used, so since v1.22 it sits under Export and the
+         whole card stays folded; one tap on the title opens it -->
+    <section class="card hidden fold" id="card-jd">
+      <details id="jdFold">
+      <summary><h2 data-i18n="jd_h">John Deere (G5 / Gen 4)</h2></summary>
+      <p class="hint" style="margin-top:0" data-i18n="jd_note">พิมพ์ค่าเหล่านี้เข้าจอ: Guidance → Create Track → Straight Track → วิธี Lat/Lon</p>
+      <div class="jdrow"><span class="lb" data-i18n="jd_aLat">A · lat</span><span class="vl" id="jdALat">–</span><button class="btn ghost cp" data-cp="jdALat">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_aLon">A · lon</span><span class="vl" id="jdALon">–</span><button class="btn ghost cp" data-cp="jdALon">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_bLat">B · lat</span><span class="vl" id="jdBLat">–</span><button class="btn ghost cp" data-cp="jdBLat">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_bLon">B · lon</span><span class="vl" id="jdBLon">–</span><button class="btn ghost cp" data-cp="jdBLon">⧉</button></div>
+      <div class="jdrow"><span class="lb" data-i18n="jd_head">heading</span><span class="vl" id="jdHead">–</span><button class="btn ghost cp" data-cp="jdHead">⧉</button></div>
+      <button class="btn ghost sm block" id="jdCopyAll" style="margin-top:9px" data-i18n="jd_copyall">คัดลอกทั้งหมด</button>
+      <p class="hint" data-i18n="jd_headnote">ทิศทาง: 0 = เหนือ · 90 = ตะวันออก · 180 = ใต้ · 270 = ตะวันตก</p>
+
+      <!-- .gjson + Rx: not yet confirmed on a real display, so folded away (closed by
+           default) rather than removed — one tap opens it for a field test. -->
+      <details class="lab" id="jdLab">
+      <summary data-i18n="jd_lab_sum">ทดลอง (ยังไม่ยืนยัน): .gjson / Rx</summary>
+      <h2 style="margin-top:15px" data-i18n="jd_gj_h">ขอบเขตแปลงสำหรับจอ JD</h2>
+      <button class="btn block" id="btnGjson" data-i18n="jd_gjson">ส่งออก .gjson (รูปแบบของจอ)</button>
+      <p class="hint" data-i18n="jd_gj_note">วางไฟล์ใน Gen4\SpatialFiles บน USB (FAT32) · ยังไม่ยืนยันว่าจอรับ — ลองแล้วบอกผลด้วยครับ</p>
+
+      <h2 style="margin-top:15px" data-i18n="rx_h">Rx — ชั้นไว้ดูบนจอ</h2>
+      <button class="btn ghost block" id="btnRx" data-i18n="rx_export">ส่งออก Rx (.zip)</button>
+      <p class="hint" data-i18n="rx_note">จอ import ผ่าน เห็นรูปแปลงบนจอ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip ใส่โฟลเดอร์ Rx บน USB</p>
+      <p class="hint" style="color:var(--danger)" data-i18n="rx_warn">⚠ ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขตหรือเส้นนำทาง AutoTrac ตามไม่ได้</p>
+      </details>
+      </details>
     </section>
 
     <section class="card" id="card-about">
@@ -1044,7 +1063,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
   </aside>
 
   <div id="mapwrap">
-    <div id="frameBanner" data-i18n="iframe_warn">กำลังแสดงในกรอบตัวอย่าง — แผนที่ดาวเทียมและการดาวน์โหลดอาจถูกบล็อก กรุณาเปิดไฟล์ .html จริงในเบราว์เซอร์</div>
+    <div id="frameBanner" data-i18n="iframe_warn">อยู่ในกรอบตัวอย่าง — ภาพดาวเทียมและการดาวน์โหลดอาจถูกบล็อก ให้เปิดไฟล์ .html จริงในเบราว์เซอร์</div>
     <div class="basepick" id="basePick">
       <button id="bpSat" class="active" data-i18n="map_sat">ดาวเทียม</button>
       <button id="bpOsm" data-i18n="map_osm">แผนที่</button>
@@ -1060,7 +1079,7 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
     <textarea class="in" id="fbMsg" data-i18n-ph="fb_msg_ph" placeholder="เจอปัญหาอะไร หรืออยากให้เพิ่มอะไร"></textarea>
     <label class="fld" style="margin-top:9px" data-i18n="fb_email">อีเมลของคุณ (เผื่อติดต่อกลับ)</label>
     <input class="in" id="fbEmail" type="email" inputmode="email" data-i18n-ph="fb_email_ph" placeholder="you@example.com">
-    <p class="hint" data-i18n="fb_note">กด “ส่ง” จะเปิดแอปอีเมลของคุณพร้อมข้อความ (ถึง vasu.ud@kmitl.ac.th) แล้วกดส่งในแอปอีเมลอีกครั้ง · ถ้าเปิดไม่ได้ ใช้ “คัดลอกข้อความ” แล้วส่งเอง</p>
+    <p class="hint" data-i18n="fb_note">“ส่ง” จะเปิดแอปอีเมลพร้อมข้อความถึง vasu.ud@kmitl.ac.th แล้วกดส่งอีกครั้ง · ถ้าเปิดไม่ได้ ใช้ “คัดลอกข้อความ”</p>
     <div class="row" style="margin-top:12px">
       <button class="btn" id="fbSend" data-i18n="fb_send">ส่ง</button>
       <button class="btn ghost" id="fbCopy" data-i18n="fb_copy">คัดลอกข้อความ</button>
@@ -1090,9 +1109,20 @@ textarea.in{min-height:112px;resize:vertical;line-height:1.45}
 <script>
 //MAIN-SCRIPT-BEGIN
 /* ===== APP META (APP_VER = single source) ===== */
-var APP_VER="1.21";
+var APP_VER="1.22";
 var DEV_EMAIL="vasu.ud@kmitl.ac.th";
 var CHANGELOG=[
+  {v:"1.22",d:"2026-10-29",
+   th:["การ์ด John Deere ย้ายไปอยู่ใต้ “ส่งออก” และพับเก็บทั้งการ์ด — แตะหัวการ์ดเพื่อเปิด",
+       "แถบพ่นติดป้าย (Demo) — ไว้สาธิต ยังไม่ใช่ฟีเจอร์สำหรับงานจริงในแปลง",
+       "ขยับเส้น AB: “ก้าวละ” เปลี่ยนเป็น “สเต็ปละ”",
+       "ช่องชื่อไฟล์เด่นขึ้น มีดินสอกับป้าย “แก้ไขได้” · แตะแล้วเลือกทั้งชื่อ พิมพ์ทับได้ทันที",
+       "คำอธิบายสั้นลงทั้งแอป ทั้งไทยและอังกฤษ"],
+   en:["The John Deere card moves under “Export” and folds away completely — tap its title to open it",
+       "Spray strips are labelled (Demo) — for demonstration, not yet a field feature",
+       "Nudge AB: the step field is now labelled “สเต็ปละ” in Thai",
+       "The file-name box stands out, with a pencil and an “editable” tag · tapping it selects the whole name so you can type over it",
+       "Shorter descriptions throughout, Thai and English"]},
   {v:"1.21",d:"2026-10-29",
    th:["KML: จุด A และ B วาดเป็นวงกลมเล็กกว้าง 1 ม. แปะบนพื้นแบบเดียวกับขอบแปลง — ซูมเข้าใน Google Earth แล้วอยู่ตรงมุมแปลงเสมอ (ไอคอนหมุดของ Google Earth ลอยอยู่คนละระดับกับพื้น พอซูมใกล้จะเลื่อนเข้าหากลางจอราว 4 ม. หมุดของ Google เองก็เลื่อนเท่ากัน)",
        "KML: ตัวอักษร A / B ยังแสดงอยู่ แต่เอาไอคอนวงกลมที่ลอยออกแล้ว",
@@ -1269,7 +1299,7 @@ var I18N={
   app_title:"ออกแบบแปลง AutoSteer", app_sub:"Boundary + AB Line",
   import_h:"นำเข้าไฟล์", import_drop:"แตะเพื่อเลือกไฟล์ หรือวางไฟล์ที่นี่", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps · GeoJSON",
   choose_h:"เลือกสิ่งที่จะโหลด", choose_bound:"ขอบเขตแปลง — polygon", choose_ab:"เส้น AB — line",
-  choose_hint:"แตะเพื่อเลือก (จะไฮไลต์บนแผนที่) · แตะซ้ำ = ไม่ใช้ · เลือกอย่างใดอย่างหนึ่ง หรือทั้งคู่ก็ได้",
+  choose_hint:"แตะเพื่อเลือก (ไฮไลต์บนแผนที่) · แตะซ้ำ = ยกเลิก · เลือกอย่างเดียวหรือทั้งคู่ก็ได้",
   choose_load:"โหลดที่เลือก", choose_none:"ไม่มีในไฟล์นี้", choose_nosel:"ยังไม่ได้เลือกอะไรเลย",
   pts:"จุด",
   loaded_h:"ข้อมูลที่โหลด", kv_bound:"ขอบเขต", kv_line:"เส้นที่โหลด", b_area:"พื้นที่",
@@ -1277,33 +1307,33 @@ var I18N={
   rows_h:"เส้นแนวแถว", rows_show:"แสดงเส้นแนวแถวบนแผนที่", rows_sp:"ระยะระหว่างแถว (ซม.)",
   rows_count:"จำนวนแถว", rows_len:"ความยาวรวม",
   rows_toomany:"ระยะห่างน้อยเกินไป (เกิน 2000 แถว) — ลองเพิ่มระยะ",
-  rows_note:"ติ๊กแสดงบนแผนที่แล้ว เส้นแนวแถวจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก” — ไว้แสดงบนแผนที่ AllyNav ไม่ต้องใช้",
+  rows_note:"ไว้ดูบนแผนที่ — AllyNav ไม่ใช้",
   jd_h:"John Deere (G5 / Gen 4)",
   jd_note:"พิมพ์ค่าเหล่านี้เข้าจอ: Guidance → Create Track → Straight Track → วิธี Lat/Lon",
   jd_aLat:"A · lat", jd_aLon:"A · lon", jd_bLat:"B · lat", jd_bLon:"B · lon", jd_head:"heading",
   jd_copyall:"คัดลอกทั้งหมด", jd_copied:"คัดลอกแล้ว: {0}",
   jd_headnote:"ทิศทาง: 0 = เหนือ · 90 = ตะวันออก · 180 = ใต้ · 270 = ตะวันตก",
   jd_gj_h:"ขอบเขตแปลงสำหรับจอ JD", jd_gjson:"ส่งออก .gjson (รูปแบบของจอ)",
-  jd_gj_note:"วางไฟล์ในโฟลเดอร์ Gen4\\SpatialFiles บน USB (FAT32) — รูปแบบเดียวกับที่จอ export ออกมาเอง · ยังไม่ยืนยันว่าจอรับกลับ ลองแล้วบอกผลด้วยครับ",
+  jd_gj_note:"วางไฟล์ใน Gen4\\SpatialFiles บน USB (FAT32) · ยังไม่ยืนยันว่าจอรับ — ลองแล้วบอกผลด้วยครับ",
   jd_need_bound:"ต้องมีขอบเขตแปลงก่อนจึงจะส่งออก .gjson ได้",
-  jd_lab_sum:"ทดลอง: ไฟล์สำหรับจอ JD (.gjson / Rx) — ยังไม่ยืนยัน",
+  jd_lab_sum:"ทดลอง (ยังไม่ยืนยัน): .gjson / Rx",
   rx_h:"Rx — ชั้นไว้ดูบนจอ", rx_export:"ส่งออก Rx (.zip)",
-  rx_note:"เติมคอลัมน์ตัวเลขที่จอฟ้องว่าขาด → import ผ่าน เห็นรูปแปลงบนจอในรถ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip แล้ววางในโฟลเดอร์ Rx บน USB",
-  rx_warn:"⚠ Rx ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขต และไม่ใช่เส้นนำทาง AutoTrac ตามไม่ได้",
+  rx_note:"จอ import ผ่าน เห็นรูปแปลงบนจอ · เส้น AB ออกเป็นแถบกว้าง 0.5 ม. · แตก zip ใส่โฟลเดอร์ Rx บน USB",
+  rx_warn:"⚠ ไว้ดูอย่างเดียว — ไม่ใช่ขอบเขตหรือเส้นนำทาง AutoTrac ตามไม่ได้",
   rx_need:"ต้องมีขอบเขตหรือเส้น AB อย่างน้อยหนึ่งอย่าง",
   lg_spray:"แถบพ่น",
-  spray_h:"แถบพ่น (รูปหวี)", spray_on:"แสดงแถบพ่นบนแผนที่",
+  spray_h:"แถบพ่น (Demo)", spray_on:"แสดงแถบพ่นบนแผนที่",
   spray_w:"แถบพ่น (ม.)", spray_k:"แถบหยุด (ม.)",
-  spray_spine:"สันเชื่อม (ม.) — ตัวที่ทำให้เป็นรูปเดียว",
-  spray_pitch:"ระยะซ้ำของลาย {0} ม. (พ่น {1} + หยุด {2})",
-  spray_neck:"จุดที่สันแคบที่สุดจริง ๆ: {0} ม. — ถ้าจอปฏิเสธรูป ให้เพิ่มค่านี้",
+  spray_spine:"สันเชื่อม (ม.)",
+  spray_pitch:"ลายซ้ำทุก {0} ม. (พ่น {1} + หยุด {2})",
+  spray_neck:"สันแคบสุด {0} ม. · ถ้าจอไม่รับรูป ให้เพิ่มค่านี้",
   spray_side:"ด้านที่วางสันเชื่อม", spray_left:"← ซ้าย", spray_right:"ขวา →",
   spray_cross:"หมุนแนวแถบ 90°",
   spray_n:"จำนวนแถบพ่น", spray_area:"พื้นที่พ่น",
-  spray_note:"ได้ polygon เดียว ฟันหวีเชื่อมกันด้วยสันด้านเดียว — เครื่องพ่นที่เปิด/ปิดตามขอบเขตจะพ่นตามรูปนี้ · ติ๊กแสดงบนแผนที่แล้ว แถบพ่นจะถูกส่งออกพร้อมขอบเขต + AB ในกล่อง “ส่งออก”",
-  spray_dir_ab:"แนวแถบ: ตั้งฉากกับเส้น AB (ขับตามเส้น AB แล้วจะสลับ เปิด/ปิด)",
-  spray_dir_edge:"แนวแถบ: อิงขอบที่ยาวที่สุดของแปลง (ยังไม่ได้กำหนดเส้น AB)",
-  spray_e_concave:"แปลงนี้มีมุมเว้า — ยังสร้างแถบพ่นให้ไม่ได้ ต้องเป็นแปลงนูน (ไม่มีมุมเว้า)",
+  spray_note:"ได้ polygon เดียว — สันเชื่อมทุกแถบไว้ด้านเดียว เครื่องพ่นที่เปิด/ปิดตามขอบเขตจึงพ่นตามรูปนี้ได้",
+  spray_dir_ab:"แถบตั้งฉากกับเส้น AB — ขับตาม AB แล้วหัวพ่นสลับเปิด/ปิด",
+  spray_dir_edge:"ยังไม่มีเส้น AB — แถบอิงขอบที่ยาวที่สุด",
+  spray_e_concave:"แปลงมีมุมเว้า — ยังสร้างแถบพ่นไม่ได้ (ต้องเป็นแปลงนูน)",
   spray_e_spine:"สันเชื่อมกว้างเกินความกว้างแปลง — ลดค่าลง",
   spray_e_many:"แถบย่อยเกิน 500 แถบ — เพิ่มความกว้างแถบ",
   spray_e_width:"ความกว้างต้องมากกว่า 0 ทุกช่อง",
@@ -1314,48 +1344,48 @@ var I18N={
   fb_open:"แจ้งปัญหา / ข้อเสนอแนะ", fb_h:"แจ้งปัญหา / ข้อเสนอแนะ",
   fb_msg:"รายละเอียด", fb_msg_ph:"เจอปัญหาอะไร หรืออยากให้เพิ่มอะไร",
   fb_email:"อีเมลของคุณ (เผื่อติดต่อกลับ)", fb_email_ph:"you@example.com",
-  fb_note:"กด “ส่ง” จะเปิดแอปอีเมลของคุณพร้อมข้อความ (ถึง vasu.ud@kmitl.ac.th) แล้วกดส่งในแอปอีเมลอีกครั้ง · ถ้าเปิดไม่ได้ ใช้ “คัดลอกข้อความ” แล้วส่งเอง",
+  fb_note:"“ส่ง” จะเปิดแอปอีเมลพร้อมข้อความถึง vasu.ud@kmitl.ac.th แล้วกดส่งอีกครั้ง · ถ้าเปิดไม่ได้ ใช้ “คัดลอกข้อความ”",
   fb_send:"ส่ง", fb_copy:"คัดลอกข้อความ",
   fb_need:"กรุณาพิมพ์รายละเอียดก่อน", fb_copied:"คัดลอกแล้ว — วางในอีเมลถึง vasu.ud@kmitl.ac.th",
   fb_nomail:"เปิดแอปอีเมลไม่ได้ — ใช้ “คัดลอกข้อความ” แทน",
   ab_h:"เส้น AB (แนวขับ)", ab_setA:"กำหนดจุด A", ab_setB:"กำหนดจุด B", ab_clear:"ล้าง A/B",
   ab_useLine:"ใช้ปลายเส้นที่โหลด",
-  ab_none:"แตะ “กำหนดจุด A” แล้วแตะใกล้จุดที่ต้องการ (บนขอบเขต หรือบนเส้นก็ได้)",
-  ab_pickA:"แตะใกล้จุดที่ต้องการ → เลือกเป็นจุด A (ได้ทุกจุดบนขอบเขตและบนเส้น)",
-  ab_pickB:"แตะใกล้จุดที่ต้องการ → เลือกเป็นจุด B (ได้ทุกจุดบนขอบเขตและบนเส้น)",
+  ab_none:"กด “กำหนดจุด A” แล้วแตะจุดบนขอบเขตหรือบนเส้น",
+  ab_pickA:"แตะจุดบนขอบเขตหรือบนเส้น → เป็นจุด A",
+  ab_pickB:"แตะจุดบนขอบเขตหรือบนเส้น → เป็นจุด B",
   ab_heading:"ทิศทาง", ab_length:"ความยาว",
   off_h:"ขยับเส้น AB (ขนานเส้นเดิม)", off_left:"← ซ้าย", off_right:"ขวา →",
-  off_value:"ระยะขยับ (ซม.)", off_step:"ก้าวละ (ซม.)", off_reset:"รีเซ็ตเป็น 0",
+  off_value:"ระยะขยับ (ซม.)", off_step:"สเต็ปละ (ซม.)", off_reset:"รีเซ็ตเป็น 0",
   off_sign:"+ = ขวาของทิศ A→B · − = ซ้าย",
   off_none:"อยู่บนเส้นเดิม", off_now:"ขยับ {0} ซม. ไปทาง{1}", off_now_m:"ขยับ {0} ซม. ({1} ม.) ไปทาง{2}",
   side_left:"ซ้าย", side_right:"ขวา",
-  export_h:"ส่งออก", fn_label:"ชื่อไฟล์", fn_ph:"field01",
+  export_h:"ส่งออก", fn_label:"ชื่อไฟล์", fn_edit:"แก้ไขได้", fn_ph:"field01",
   export_shp:"Shapefile (.zip)", export_kml:"KML",
   export_usb:"บันทึกลงไดรฟ์…", export_usb_sub:"Shapefile + KML",
-  usb_note:"เลือกไดรฟ์หรือโฟลเดอร์ปลายทาง — ในเครื่อง หรือแฟลชไดรฟ์ USB ก็ได้ · แอปจะสร้างโฟลเดอร์ชื่อเดียวกับ “ชื่อไฟล์” แล้วใส่ shapefile ทุกชั้นกับไฟล์ KML ไว้ข้างใน ไม่ต้องแตก zip · ถ้ามีโฟลเดอร์ชื่อนี้อยู่แล้ว จะถูกแทนที่ด้วยชุดนี้",
+  usb_note:"เลือกในเครื่องหรือแฟลชไดรฟ์ USB · ได้โฟลเดอร์ชื่อเดียวกับไฟล์ (ทุกชั้น + KML) ไม่ต้องแตก zip · ชื่อซ้ำจะทับของเดิม",
   usb_done:"บันทึกโฟลเดอร์ “{0}” ลงใน “{1}” แล้ว — shapefile {2} ชั้น + KML",
   usb_done_here:"บันทึกลงโฟลเดอร์ “{0}” แล้ว — shapefile {1} ชั้น + KML",
-  usb_fail:"บันทึกลงไดรฟ์ไม่สำเร็จ: {0} — ใช้ปุ่ม Shapefile (.zip) แทน",
-  usb_no_frame:"ปุ่มนี้ใช้ไม่ได้ในหน้าตัวอย่าง — เปิดลิงก์ของแอปใน Chrome หรือ Edge แล้วจะกดได้ · ตอนนี้ใช้ Shapefile (.zip) แทน",
-  usb_no_secure:"ต้องเปิดแอปผ่านลิงก์ https (เช่น vasu-kmitl.github.io/abLinePlan) ปุ่มนี้จึงจะใช้ได้ · ตอนนี้ใช้ Shapefile (.zip) แทน",
-  usb_no_api:"เบราว์เซอร์นี้ไม่รองรับ — ใช้ได้กับ Chrome/Edge บนคอม และ Chrome บน Android (ไม่มีบน Safari, iPad/iPhone และ Firefox) · ตอนนี้ใช้ Shapefile (.zip) แทน",
+  usb_fail:"บันทึกไม่สำเร็จ: {0} — ใช้ Shapefile (.zip) แทน",
+  usb_no_frame:"ใช้ไม่ได้ในหน้าตัวอย่าง — เปิดลิงก์แอปใน Chrome หรือ Edge · ตอนนี้ใช้ Shapefile (.zip) แทน",
+  usb_no_secure:"ต้องเปิดแอปผ่านลิงก์ https (vasu-kmitl.github.io/abLinePlan) · ตอนนี้ใช้ Shapefile (.zip) แทน",
+  usb_no_api:"เบราว์เซอร์นี้ไม่รองรับ (ได้เฉพาะ Chrome/Edge บนคอม และ Chrome บน Android) · ตอนนี้ใช้ Shapefile (.zip) แทน",
   ex_boundonly:"ยังไม่มีเส้น AB — จะส่งออกเฉพาะขอบเขต",
   ex_abonly:"ไม่มีขอบเขต — จะส่งออกเฉพาะเส้น AB",
-  ex_spray_bad:"แถบพ่นยังสร้างไม่ได้ (ดูคำเตือนในการ์ดแถบพ่น) — จะไม่ถูกส่งออก",
-  ex_rows_bad:"เส้นแนวแถวมากเกินไป (ดูคำเตือนในการ์ดเส้นแนวแถว) — จะไม่ถูกส่งออก",
-  export_note:"ส่งออกเฉพาะสิ่งที่ใช้จริง — แถบพ่นและเส้นแนวแถวจะออกไปด้วยเมื่อติ๊กแสดงบนแผนที่",
+  ex_spray_bad:"แถบพ่นยังสร้างไม่ได้ (ดูการ์ดแถบพ่น) — ไม่ส่งออก",
+  ex_rows_bad:"เส้นแนวแถวมากเกินไป (ดูการ์ดเส้นแนวแถว) — ไม่ส่งออก",
+  export_note:"ชื่อที่จาง = ไม่ส่งออก · แถบพ่นและเส้นแนวแถวออกไปด้วยเมื่อติ๊กแสดงบนแผนที่",
   changelog:"บันทึกการแก้ไข", unit_rai:"ไร่",
   theme_toLight:"โหมดสว่าง", theme_toDark:"โหมดมืด", map_osm:"แผนที่", map_sat:"ดาวเทียม",
   need_any:"ยังไม่มีอะไรให้ส่งออก",
   err_read:"อ่านไฟล์ไม่สำเร็จ: {0}", err_nofeat:"ไม่พบ polygon หรือเส้นในไฟล์นี้", err_nozip:"ไม่พบ .kml หรือ .shp ในไฟล์บีบอัดนี้",
-  err_isimage:"นี่เป็นไฟล์รูป ไม่ใช่ไฟล์แผนที่ — ถ้าเบราว์เซอร์ให้เลือกได้แต่รูป ให้เปิดไฟล์ .html นี้ใน Chrome แล้วเลือกจาก “Files”",
-  iframe_warn:"กำลังแสดงในกรอบตัวอย่าง — แผนที่ดาวเทียมและการดาวน์โหลดอาจถูกบล็อก กรุณาเปิดไฟล์ .html จริงในเบราว์เซอร์"
+  err_isimage:"นี่เป็นไฟล์รูป ไม่ใช่ไฟล์แผนที่ — ถ้าเลือกได้แต่รูป ให้เปิดแอปใน Chrome แล้วเลือกจาก “Files”",
+  iframe_warn:"อยู่ในกรอบตัวอย่าง — ภาพดาวเทียมและการดาวน์โหลดอาจถูกบล็อก ให้เปิดไฟล์ .html จริงในเบราว์เซอร์"
  },
  en:{
   app_title:"AutoSteer Field Designer", app_sub:"Boundary + AB Line",
   import_h:"Import file", import_drop:"Tap to choose a file, or drop one here", import_hint:"KML · KMZ · Shapefile (.shp / .zip) · SW Maps · GeoJSON",
   choose_h:"Choose what to load", choose_bound:"Field boundary — polygon", choose_ab:"AB line — line",
-  choose_hint:"Tap to select (it lights up on the map) · tap again = don't use · either one, or both",
+  choose_hint:"Tap to select (it lights up on the map) · tap again = skip · one or both",
   choose_load:"Load selected", choose_none:"none in this file", choose_nosel:"Nothing selected yet",
   pts:"pts",
   loaded_h:"Loaded", kv_bound:"Boundary", kv_line:"Loaded line", b_area:"Area",
@@ -1363,32 +1393,32 @@ var I18N={
   rows_h:"Row lines", rows_show:"Show row lines on the map", rows_sp:"Row spacing (cm)",
   rows_count:"Rows", rows_len:"Total length",
   rows_toomany:"Spacing too small (over 2000 rows) — try a larger spacing",
-  rows_note:"Once shown on the map, row lines export with the boundary + AB from the Export box — for showing on maps; AllyNav does not need them",
+  rows_note:"For viewing on maps — AllyNav does not use them",
   jd_h:"John Deere (G5 / Gen 4)",
   jd_note:"Type these into the display: Guidance → Create Track → Straight Track → Lat/Lon method",
   jd_aLat:"A · lat", jd_aLon:"A · lon", jd_bLat:"B · lat", jd_bLon:"B · lon", jd_head:"heading",
   jd_copyall:"Copy all", jd_copied:"Copied: {0}",
   jd_headnote:"Heading: 0 = North · 90 = East · 180 = South · 270 = West",
   jd_gj_h:"Field boundary for the JD display", jd_gjson:"Export .gjson (display format)",
-  jd_gj_note:"Put the file in Gen4\\SpatialFiles on a FAT32 USB — same format the display exports itself · not yet confirmed that the display reads it back, please report what happens",
+  jd_gj_note:"Put it in Gen4\\SpatialFiles on a FAT32 USB · not yet confirmed the display reads it — please report back",
   jd_need_bound:"Load a boundary first to export a .gjson",
-  jd_lab_sum:"Experimental: files for the JD display (.gjson / Rx) — not yet confirmed",
+  jd_lab_sum:"Experimental (unconfirmed): .gjson / Rx",
   rx_h:"Rx — on-screen reference layer", rx_export:"Export Rx (.zip)",
-  rx_note:"Adds the numeric column the display said was missing → the import succeeds and the field shows up in the cab · the AB line goes out as a 0.5 m corridor · unzip into the Rx folder on the USB",
-  rx_warn:"⚠ Rx is for looking at only — it is not a boundary and not a guidance line; AutoTrac cannot follow it",
+  rx_note:"Imports on the display and shows the field in the cab · the AB line becomes a 0.5 m strip · unzip into the Rx folder on the USB",
+  rx_warn:"⚠ For viewing only — not a boundary or a guidance line; AutoTrac cannot follow it",
   rx_need:"Load a boundary or an AB line first",
   lg_spray:"Spray strips",
-  spray_h:"Spray strips (comb)", spray_on:"Show spray strips on the map",
+  spray_h:"Spray strips (Demo)", spray_on:"Show spray strips on the map",
   spray_w:"Spray band (m)", spray_k:"Skip band (m)",
-  spray_spine:"Spine (m) — what keeps it one polygon",
-  spray_pitch:"Pattern pitch {0} m (spray {1} + skip {2})",
-  spray_neck:"Narrowest point of the real spine: {0} m — widen it if the display rejects the shape",
+  spray_spine:"Spine (m)",
+  spray_pitch:"Pattern repeats every {0} m (spray {1} + skip {2})",
+  spray_neck:"Narrowest spine {0} m · widen it if the display rejects the shape",
   spray_side:"Edge carrying the spine", spray_left:"← Left", spray_right:"Right →",
   spray_cross:"Rotate bands 90°",
   spray_n:"Spray bands", spray_area:"Sprayed area",
-  spray_note:"One polygon: the teeth are joined by a spine along one edge, so a sprayer that toggles on the boundary follows this shape · once shown on the map, the strips export with the boundary + AB from the Export box",
-  spray_dir_ab:"Band direction: perpendicular to the AB line (drive the AB line and the booms toggle)",
-  spray_dir_edge:"Band direction: from the field's longest edge (no AB line set)",
+  spray_note:"One polygon — a spine on one side joins every band, so a sprayer that toggles on boundaries follows it",
+  spray_dir_ab:"Bands run across the AB line — drive the AB line and the booms toggle",
+  spray_dir_edge:"No AB line yet — bands follow the longest edge",
   spray_e_concave:"This field has a concave corner — strips need a convex field for now",
   spray_e_spine:"The spine is wider than the field — reduce it",
   spray_e_many:"Over 500 bands — widen the bands",
@@ -1400,42 +1430,42 @@ var I18N={
   fb_open:"Report an issue / suggestion", fb_h:"Report an issue / suggestion",
   fb_msg:"Details", fb_msg_ph:"What went wrong, or what would you like added?",
   fb_email:"Your email (so you can be reached)", fb_email_ph:"you@example.com",
-  fb_note:"“Send” opens your mail app with the message ready (to vasu.ud@kmitl.ac.th) — press send there · if it cannot open, use “Copy” and send it yourself",
+  fb_note:"“Send” opens your mail app with the message to vasu.ud@kmitl.ac.th — press send there · if it won’t open, use “Copy text”",
   fb_send:"Send", fb_copy:"Copy text",
   fb_need:"Please write some details first", fb_copied:"Copied — paste it into an email to vasu.ud@kmitl.ac.th",
   fb_nomail:"Could not open a mail app — use “Copy text” instead",
   ab_h:"AB Line (guidance)", ab_setA:"Set point A", ab_setB:"Set point B", ab_clear:"Clear A/B",
   ab_useLine:"Use the loaded line's endpoints",
-  ab_none:"Tap “Set point A”, then tap near any vertex (on the boundary or on the line)",
-  ab_pickA:"Tap near any vertex → it becomes point A (boundary or line)",
-  ab_pickB:"Tap near any vertex → it becomes point B (boundary or line)",
+  ab_none:"Tap “Set point A”, then tap a vertex on the boundary or the line",
+  ab_pickA:"Tap a vertex on the boundary or the line → point A",
+  ab_pickB:"Tap a vertex on the boundary or the line → point B",
   ab_heading:"Heading", ab_length:"Length",
   off_h:"Nudge AB line (parallel)", off_left:"← Left", off_right:"Right →",
   off_value:"Offset (cm)", off_step:"Step (cm)", off_reset:"Reset to 0",
   off_sign:"+ = right of A→B heading · − = left",
   off_none:"On the original line", off_now:"Shifted {0} cm to the {1}", off_now_m:"Shifted {0} cm ({1} m) to the {2}",
   side_left:"left", side_right:"right",
-  export_h:"Export", fn_label:"File name", fn_ph:"field01",
+  export_h:"Export", fn_label:"File name", fn_edit:"editable", fn_ph:"field01",
   export_shp:"Shapefile (.zip)", export_kml:"KML",
   export_usb:"Save to a drive…", export_usb_sub:"Shapefile + KML",
-  usb_note:"Pick the destination drive or folder — the computer's own drive or a USB flash drive · the app makes a folder named after the file name and puts every shapefile layer plus a KML inside it, nothing to unzip · an existing folder of that name is replaced by this set",
+  usb_note:"This computer or a USB flash drive · one folder named after the file (every layer + KML), nothing to unzip · a same-name folder is replaced",
   usb_done:"Saved folder “{0}” into “{1}” — {2} shapefile layer(s) + KML",
   usb_done_here:"Saved into folder “{0}” — {1} shapefile layer(s) + KML",
-  usb_fail:"Could not save to the drive: {0} — use Shapefile (.zip) instead",
-  usb_no_frame:"Not available inside a preview — open the app's link in Chrome or Edge to use it · use Shapefile (.zip) for now",
-  usb_no_secure:"The app must be opened from an https link (e.g. vasu-kmitl.github.io/abLinePlan) for this to work · use Shapefile (.zip) for now",
-  usb_no_api:"This browser does not support it — works in Chrome/Edge on a computer and Chrome on Android (not Safari, iPad/iPhone or Firefox) · use Shapefile (.zip) for now",
+  usb_fail:"Could not save: {0} — use Shapefile (.zip) instead",
+  usb_no_frame:"Not available in a preview — open the app’s link in Chrome or Edge · use Shapefile (.zip) for now",
+  usb_no_secure:"Open the app from its https link (vasu-kmitl.github.io/abLinePlan) · use Shapefile (.zip) for now",
+  usb_no_api:"This browser does not support it (Chrome/Edge on a computer, Chrome on Android only) · use Shapefile (.zip) for now",
   ex_boundonly:"No AB line yet — the boundary alone will be exported",
   ex_abonly:"No boundary — the AB line alone will be exported",
-  ex_spray_bad:"The spray strips cannot be built yet (see the warning in their card) — they will be left out",
-  ex_rows_bad:"Too many row lines (see the warning in their card) — they will be left out",
-  export_note:"Only what you actually use is exported — spray strips and row lines go too while they are shown on the map",
+  ex_spray_bad:"Spray strips can’t be built yet (see their card) — left out",
+  ex_rows_bad:"Too many row lines (see their card) — left out",
+  export_note:"Faded names are not exported · spray strips and row lines go too while shown on the map",
   changelog:"Changelog", unit_rai:"rai",
   theme_toLight:"Light mode", theme_toDark:"Dark mode", map_osm:"Map", map_sat:"Satellite",
   need_any:"Nothing to export yet",
   err_read:"Could not read file: {0}", err_nofeat:"No polygon or line found in this file", err_nozip:"No .kml or .shp found in this archive",
-  err_isimage:"That is an image, not a map file — if your browser only offers photos, open this .html in Chrome and pick from “Files”",
-  iframe_warn:"Running in a preview frame — satellite tiles and downloads may be blocked. Open the real .html file in a browser."
+  err_isimage:"That is an image, not a map file — if only photos are offered, open the app in Chrome and pick from “Files”",
+  iframe_warn:"In a preview frame — satellite tiles and downloads may be blocked. Open the real .html file in a browser."
  }
 };
 var LANG="th";
@@ -3073,6 +3103,8 @@ function bindUI(){
   el("rowsSp").addEventListener("input",redraw);
 
   el("fname").addEventListener("input",updateExPreview);
+  /* tap the name = whole name selected, so typing replaces it (a second tap places the caret) */
+  el("fname").addEventListener("focus",function(){ var f=this; setTimeout(function(){ try{ f.select(); }catch(e){} },0); });
   el("btnShp").onclick=exportSHP;
   el("btnKml").onclick=exportKML;
   var why=dirSaveBlock();
